@@ -1,3 +1,4 @@
+var EventManager = require('event.manager').ins();
 
 var EventListener = {
 	_uids : [],

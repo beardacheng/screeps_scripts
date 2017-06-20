@@ -1,15 +1,26 @@
 var Tool = require('tool');
 var CTRL_CONTROLLER = require("ctrl.controller");
+var CTRL_CREATE_CREEP = require("ctrl.create.creep");
 
 var HQ = _.assign(_.clone(Tool.Singleton), {
+	
+	
 	createNew : function() {
 		var ins = {
 			ctrls : [],
 		};
 		
+		var initCtrl = function(value, key, ctrl) {
+			var c = ctrl.createNew(key);
+			if (c.init()) {
+				console.log(c);
+				ins.ctrls.push(c);
+			}
+		};
+		
         _.forEach(Game.rooms, function(value,key) {
-			var ctrl = CTRL_CONTROLLER.createNew(key);
-			ins.ctrls.push(ctrl);
+			initCtrl(value, key, CTRL_CONTROLLER);
+			initCtrl(value, key, CTRL_CREATE_CREEP);
         })
 		
 		/*
