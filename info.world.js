@@ -21,7 +21,7 @@ var worldInfo = _.assign(_.clone(Tool.Singleton), {
         })
 		
 		//获取房间信息
-		ins.getRoomInfo = function(roomName) {
+		ins.roomInfo = function(roomName) {
 			return ins.roomInfos[roomName]; 
 		}
         

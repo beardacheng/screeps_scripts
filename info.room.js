@@ -31,6 +31,21 @@ var roomInfo = {
 			})
 		}
 		
+		ins.spawnName = function() {
+		    if (ins._spawnName != undefined) {
+		        return ins._spawnName; 
+		    }
+		    
+		   _.forEach(Game.spawns, function(value, key){
+				if (value.room.name == ins.name) {
+				    ins._spawnName = key;
+					return false;
+				}
+			}) 
+			
+			return ins._spawnName;
+		}
+		
 		ins.creepCount = function(type) {
 			return ins.creepInfo.typeCount[type] == undefined ? 0 : ins.creepInfo.typeCount[type];
 		}

@@ -23,7 +23,7 @@ var CtrlController = {
 		//EventManager.dispatch({name: "TEST_EVENT", str:"event system is valid"})
 		
 		ins.tick = function() {
-			var roomInfo = WorldInfo.getRoomInfo(this._roomName);
+			var roomInfo = WorldInfo.roomInfo(this._roomName);
 			var creepCount = roomInfo.creepCount(ENUM.CREEP_TYPE.CONTROLLER);
 			
 			if (creepCount <= 0) {

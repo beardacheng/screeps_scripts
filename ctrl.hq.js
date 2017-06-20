@@ -1,6 +1,7 @@
 var Tool = require('tool');
 var CTRL_CONTROLLER = require("ctrl.controller");
 var CTRL_CREATE_CREEP = require("ctrl.create.creep");
+var CTRL_MINING_ENERGY = require("ctrl.mining.energy")
 
 var HQ = _.assign(_.clone(Tool.Singleton), {
 	
@@ -21,6 +22,7 @@ var HQ = _.assign(_.clone(Tool.Singleton), {
         _.forEach(Game.rooms, function(value,key) {
 			initCtrl(value, key, CTRL_CONTROLLER);
 			initCtrl(value, key, CTRL_CREATE_CREEP);
+			initCtrl(value, key, CTRL_MINING_ENERGY);
         })
 		
 		/*
