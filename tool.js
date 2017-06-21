@@ -20,6 +20,12 @@ var Tool = {
 	
 	init : function(){
 		
+	},
+	
+	findTerrainInRange : function(room, pos, range, types) {
+		return _.filter(room.lookAtArea(pos.y - range, pos.x - range , pos.y + range, pos.x + range, true), function(value) {
+			return value.type == 'terrain' && types.indexOf(value.terrain) != -1;
+		}) 
 	}
 }
 

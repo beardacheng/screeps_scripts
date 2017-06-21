@@ -1,10 +1,9 @@
-var CREEP_TYPE = {
-	CONTROLLER : 'CONTROLLER',
-}
+
 
 module.exports = {
 	CREEP_TYPE : {
 		CONTROLLER : 'CONTROLLER',
+		MINER : 'MINER',
 	},
 	
 	PRIORITY : {
@@ -15,5 +14,6 @@ module.exports = {
 	
 	EVNET_NAME : {
 		NEED_CREATE_CREEP : "NEED_CREATE_CREEP", //body, type, priority,
+		CREEP_CREATED : "NEED_CREATE_CREEP",  //creepName
 	} ,
 }

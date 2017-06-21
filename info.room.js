@@ -18,7 +18,8 @@ var roomInfo = {
 					this.typeCount = {}
 				},
 				typeCount : {}  //type: controller
-			}
+			},
+			_pathFindMatrix : new PathFinder.CostMatrix,
         });
 		
 		//更新各类型creep数量信息
