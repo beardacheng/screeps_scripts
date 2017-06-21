@@ -44,8 +44,8 @@ var CtrlMiningEnergy = {
 			var creepsInRoom = _.filter(Game.creeps, _.property(['room', 'name']), ins._roomName);
 			_.forEach(creepsInRoom, function(v) { 
 				ins._creeps.push(CtrlMiningCreep.createNew(v.name, [])); 
-			})
-			*/
+			})*/
+			
 		    
 			return true;
 		}
@@ -65,19 +65,22 @@ var CtrlMiningEnergy = {
 				posesAround = _.map(posesAround, function(v) {
 					to.x = v.x;
 					to.y = v.y;
-					v.pathRet = PathFinder.search(from, to, {roomCallback: function() {return roomInfo._pathFindMatrix}, swampCost : 1});
+					v.pathRet = PathFinder.search(from, to, {roomCallback: function() {return roomInfo._pathFindMatrix},  swampCost : 1});
 					return v; 
 				});
 				
 				posesAround = _.sortBy(posesAround, _.property(['pathRet', 'cost']));
 				var best = posesAround[0].pathRet.path;
 				ins._paths.push(best);
+				console.log(Tool.serializePath(best));
+
+				//console.log(Room.serializePath(best));
 				posesAround = _.drop(posesAround, 1);
 				
 				//更新路线cost
 				_.forEach(best, function(v) { 
-					var orgCost = roomInfo._pathFindMatrix.get(v.x, v.y);
-					var addCost = 1;
+					var orgCost = roomInfo._pathFindMatrix.get(v.x, v.y); 
+					var addCost = 2;
 					roomInfo._pathFindMatrix.set(v.x, v.y, orgCost == 0 ? 1 + addCost : orgCost + addCost);
 				})
 			}	
@@ -90,7 +93,7 @@ var CtrlMiningEnergy = {
 		}
 		
 		ins.tick = function() {
-		    var room = Game.rooms[ins._roomName];
+		    var room = Game.rooms[ins._roomName]; 
 		    _.forEach(ins._paths, function(value){
 		        room.visual.poly(value, {lineStyle:"dashed"});  
 		    })

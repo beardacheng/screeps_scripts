@@ -30,7 +30,7 @@ var EventManager = _.assign({
 		}
 		
 		ins.dispatch = function(event) {
-		    //console.log("dispatch , listener count "  + _.size(this._listeners))
+		    //console.log("dispatch " + event.name + ", listener count "  + _.size(this._listeners))
 			_.forEach(this._listeners, function(value, key) {
 				if (value._name == event.name) {
 					value._dealFunc.call(value._listener, event)

@@ -29,15 +29,18 @@ var CtrlMiningCreep = {
 		});
 		
 		var creep = Game.creeps[ins._creepName];
+		console.log('look at ' + creep + ". name is " + ins._creepName);
 		if (!!!creep) return;
 		
 		if (creep.memory.stat == undefined) {
 			creep.memory.stat = ins._stat;
-			creep.memory.path = creep.room.serializePath(ins._path);
+			//console.log(ins._path); 
+			creep.memory.path = Room.serializePath(ins._path);
 		}
 		else {
 			ins._stat = creep.memory.stat;
 			ins._path = Room.deserializePath(creep.memory.path);
+			console.log(ins._path); 
 		}
 		
 		ins.tick = function() {

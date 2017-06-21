@@ -19,7 +19,7 @@ var CtrlCreateCreep = {
 		}
 		
 		ins.initEvent = function(){
-			ins.AddListener(ENUM.EVNET_NAME.NEED_CREATE_CREEP, ins.handleEventCreateCreep);
+			ins.AddListener(ENUM.EVNET_NAME.NEED_CREATE_CREEP, ins.handleEventCreateCreep); 
 		}
 		
 		ins.handleEventCreateCreep = function(event) {
@@ -37,6 +37,7 @@ var CtrlCreateCreep = {
 		}
 		
 		ins.tick = function() {
+		    
 		}
 		
 		return ins;
