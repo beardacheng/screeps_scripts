@@ -13,7 +13,7 @@ var EventManager = require('event.manager').ins();
 var Tool = require('tool');
 
 var CtrlMiningCreep = {
-	createNew : function(creepName, path) {
+	createNew : function(creepName, path, lineSeq) {
 		var STAT = {
 			INIT : 0,
 			GO : 1,
@@ -24,54 +24,82 @@ var CtrlMiningCreep = {
 		
 		var ins = _.assign(Listener.createNew(), { 
 			_creepName : creepName,
+			_lineSeq : lineSeq,
 			_path : path,
+			_backPath : _(_.clone(path)).reverse().value(), 
 			_stat : STAT.INIT,
 		});
 		
 		var creep = Game.creeps[ins._creepName];
-		console.log('look at ' + creep + ". name is " + ins._creepName);
-		if (!!!creep) return;
+		if (!!!creep) return undefined;
 		
-		if (creep.memory.stat == undefined) {
-			creep.memory.stat = ins._stat;
-			//console.log(ins._path); 
-			creep.memory.path = Room.serializePath(ins._path);
-		}
-		else {
-			ins._stat = creep.memory.stat;
-			ins._path = Room.deserializePath(creep.memory.path);
-			console.log(ins._path); 
-		}
-		
+		creep.memory.lineSeq = ins._lineSeq;
+		creep.memory.stat = ins._stat;
+		creep.memory.path = Tool.serializePath(ins._path);
+				
 		ins.tick = function() {
+			creep = Game.creeps[ins._creepName]; 
+			if (!!!creep) return;   
 			
-			if (!!!creep) return;
-			
-			switch(ins._stat) {
+			ins._stat = creep.memory.stat;
+			switch(ins._stat) { 
 			case STAT.INIT:
 				{
-					var orgPos = ins._path[0];
-					if (creep.pos != orgPos) {
-						creep.moveTo(orgPos);
+					var orgPos = ins._path[0];			
+					if (!_.isEqual(creep.pos, orgPos)) {
+						var ret = creep.moveTo(orgPos);
 						return;
-					}
+					} 
 					else {
 						ins._stat = STAT.GO;
+						creep.memory.stat = ins._stat;
 					}
 				}
 				break;
 			case STAT.GO:
 				{
-					var ret = creep.moveByPath(ins._path);
-					if (ret == OK && creep.pos == _.last(ins._path)) {
+					var destPos = _.last(ins._path);
+					if (!_.isEqual(creep.pos, destPos)) {
+						creep.moveByPath(ins._path);
+						//console.log(ins._path);
+						//console.log(creep.pos);
+					}
+					else {
 						ins._stat = STAT.MINING;
+						creep.memory.stat = ins._stat;
 					}
 				}
 				break;
 			case STAT.MINING:
 				{
-					var resource = Tool.findTerrainInRange(creep.room, creep.pos, 1, ['resource']);
-					console.log(resource);
+					var energySource = creep.pos.findClosestByRange(FIND_SOURCES_ACTIVE);
+					creep.harvest(energySource);
+					if (_.sum(creep.carry) == creep.carryCapacity) {
+						ins._stat = STAT.BACK;
+						creep.memory.stat = ins._stat;
+					}
+				}
+				break;
+			case STAT.BACK:
+				{
+					var destPos = _.last(ins._backPath);
+					if (!_.isEqual(creep.pos, destPos)) {
+						var ret = creep.moveByPath(ins._backPath);
+					}
+					else {
+						ins._stat = STAT.DUMPING;
+						creep.memory.stat = ins._stat;
+					}
+				}
+				break; 
+			case STAT.DUMPING:
+				{
+					var storage = creep.pos.findClosestByRange(FIND_MY_SPAWNS);
+					var ret = creep.transfer(storage, RESOURCE_ENERGY);
+					if (_.sum(creep.carry) == 0){
+						ins._stat = STAT.GO;
+						creep.memory.stat = ins._stat;
+					}
 				}
 				break;
 			}

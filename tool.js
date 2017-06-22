@@ -12,9 +12,13 @@ var Tool = {
 	    _ins : undefined,
 		ins : function() {
 			if (this._ins == undefined) { 
+				console.log('new singleton');
 				this._ins = this.createNew();
 			}        
 			return this._ins;
+		},
+		deinit : function() {
+			
 		},
 	},
 	
@@ -22,18 +26,39 @@ var Tool = {
 		
 	},
 	
-	findTerrainInRange : function(room, pos, range, types) {
-		return _.filter(room.lookAtArea(pos.y - range, pos.x - range , pos.y + range, pos.x + range, true), function(value) {
-			return value.type == 'terrain' && types.indexOf(value.terrain) != -1;
+	findInRange : function(room, pos, range, type, types) {
+		return _.filter(room.lookAtArea(pos.y - range, pos.x - range , pos.y + range, pos.x + range, true), function(value) {			
+			switch(value.type){
+			case 'terrain':
+				return value.type == type && types.indexOf(value.terrain) != -1;
+			case 'source':
+				return value.type == type;
+			default:
+				return false;
+			} 
 		}) 
 	},
 	
 	serializePath : function(path) {
-	    console.log(_.size(path))
 	    if (_.size(path) == 0) return "";
 	    var s = path[0].roomName;
 	    _.forEach(path, function(v) { s += "|" + v.x + "_" + v.y});
+		this.deserializePath(s); //TODO: delete
 	    return s;
+	},
+	
+	deserializePath : function(path) {
+	    var poses = path.split("|");
+		var roomName = poses[0];
+		var ret = [];
+		
+		poses = _.drop(poses, 1);
+		_.forEach(poses, function(v){
+			var xy = v.split("_");
+			ret.push(new RoomPosition(xy[0], xy[1], roomName))
+		});
+		
+		return ret;
 	},
 }
 

@@ -8,6 +8,7 @@
  */
 
 var Listener = require('event.listener');
+var ENUM = require('enum'); 
 
 var roomInfo = {	
     createNew: function(roomName) {
@@ -21,6 +22,10 @@ var roomInfo = {
 			},
 			_pathFindMatrix : new PathFinder.CostMatrix,
         });
+		
+		ins.init = function() {
+			ins.initEvent();
+		}
 		
 		//更新各类型creep数量信息
 		ins.updateCreepInfo = function() {
@@ -56,6 +61,16 @@ var roomInfo = {
             console.log("controller level is " + room.controller.level);
             console.log("energy in the room " + room.energyAvailable + "/" + room.energyCapacityAvailable);
         }
+		
+		ins.initEvent = function(){
+			ins.AddListener(ENUM.EVNET_NAME.CREEP_CREATED, ins.eventHandleInitCreep);
+			ins.AddListener(ENUM.EVNET_NAME.CREEP_LOADED, ins.eventHandleInitCreep);
+		}
+		
+		ins.eventHandleInitCreep = function(event) {
+			var type = event.type;
+			ins.creepInfo.typeCount[type] = ins.creepInfo.typeCount[type] == undefined ?  1 : ins.creepInfo.typeCount[type] + 1
+		}
         
         return ins; 
     }

@@ -15,5 +15,6 @@ module.exports = {
 	EVNET_NAME : {
 		NEED_CREATE_CREEP : "NEED_CREATE_CREEP", //body, type, priority,
 		CREEP_CREATED : "CREEP_CREATED",  //creepName
+		CREEP_LOADED : "CREEP_LOADED", 		//creepName, type, roomName
 	} ,
 }
