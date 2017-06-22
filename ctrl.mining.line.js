@@ -8,8 +8,7 @@
  */
 var Listener = require('event.listener');
 var ENUM = require('enum'); 
-var EventManager = require('event.manager').ins();
-var WorldInfo = require('info.world').ins();
+var EventManager = require('event.manager');
 var Tool = require('tool');
 var CtrlMiningCreep = require('ctrl.mining.creep');
 

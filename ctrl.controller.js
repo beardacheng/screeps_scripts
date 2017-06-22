@@ -1,24 +1,24 @@
 var Listener = require('event.listener');
-var WorldInfo = require('info.world').ins();
 var ENUM = require('enum'); 
-var EventManager = require('event.manager').ins();
+var EventManager = require('event.manager');
 var Tool = require('tool');
 var CtrlControllerCreep = require('ctrl.controller.creep');
+var Base = require('base');
 
 var CtrlController = {
 	createNew : function(roomName) {
-		var ins = _.assign(Listener.createNew(), { 
+		var ins = _.assign(Listener.createNew(), Base, { 
 			_roomName : roomName,
 			_creeps : []
 		})
 		
+		var room = ins.getRoom();
+		var controller = room.controller;
+		var spawn = ins.getSpawn();
+		var roomInfo = ins.getRoomInfo();
+		
 		ins.init = function() {
 			ins.initEvent();
-			
-			var room = Game.rooms[ins._roomName];
-			var controller = room.controller;
-			var spawn = Game.spawns[WorldInfo.roomInfo(ins._roomName).spawnName()];
-			var roomInfo = WorldInfo.roomInfo(this._roomName);
 			
 			ins._path = PathFinder.search(spawn.pos, {pos:controller.pos, range:1}, {roomCallback: function() {return roomInfo._pathFindMatrix}, maxCost : 100}).path;
 			_.forEach(ins._path, function(v) {  
@@ -43,18 +43,15 @@ var CtrlController = {
 		}
 		
 		ins.tick = function() {
-			var room = Game.rooms[ins._roomName];
-			var roomInfo = WorldInfo.roomInfo(this._roomName);
-			var spawn = Game.spawns[WorldInfo.roomInfo(ins._roomName).spawnName()];
 			var controller = room.controller; 
 			if (!!!controller) return; 
 			
 			var creepCount = roomInfo.creepCount(ENUM.CREEP_TYPE.CONTROLLER);
-			if (creepCount <= 0) {
+			if (creepCount <= 1) {
 				var event = {name: ENUM.EVNET_NAME.NEED_CREATE_CREEP, 
 							body:[WORK,MOVE,CARRY], 
 							type: ENUM.CREEP_TYPE.CONTROLLER}
-				EventManager.dispatch(event)
+				EventManager.ins().dispatch(event)
 			}
 			
 			room.visual.poly(ins._path, {lineStyle:"dashed", stroke:"#00FF00"}); 

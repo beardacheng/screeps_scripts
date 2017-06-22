@@ -9,8 +9,7 @@
  
 var Listener = require('event.listener');
 var ENUM = require('enum'); 
-var EventManager = require('event.manager').ins();
-var WorldInfo = require('info.world').ins();
+var EventManager = require('event.manager');
 var Tool = require('tool');
 var CtrlMiningLine = require('ctrl.mining.line');
 var Base = require('base');
@@ -24,10 +23,11 @@ var CtrlMiningEnergy = {
 			//_pathFindMatrix : new PathFinder.CostMatrix,
 		});
 		
+		var room = ins.getRoom();
+		var spawn = ins.getSpawn();
+		var roomInfo = ins.getRoomInfo();
+		
 		ins.init = function() {
-		    var room = Game.rooms[ins._roomName];
-		    var spawn = Game.spawns[WorldInfo.roomInfo(ins._roomName).spawnName()]; 
-			
 			ins.initEvent();
 		   	
 			//init paths
@@ -58,8 +58,6 @@ var CtrlMiningEnergy = {
 		}
 		
 	    var createPath = function(from, to) { 
-			var room = Game.rooms[ins._roomName];
-			var roomInfo = WorldInfo.roomInfo(ins._roomName);
 			var mineAt = to;
 
 			var posesAround = Tool.findInRange(room, to, 1, 'terrain', ['swamp', 'plain']);
@@ -95,10 +93,6 @@ var CtrlMiningEnergy = {
 		}
 		
 		ins.tick = function() {			
-		    var room = Game.rooms[ins._roomName]; 
-			var spawn = Game.spawns[WorldInfo.roomInfo(ins._roomName).spawnName()]; 
-			var roomInfo = ins.getRoomInfo();
-			
 			//画出线路
 		    _.forEach(ins._paths, function(value){
 		        room.visual.poly(value, {lineStyle:"dashed"});  
@@ -111,24 +105,14 @@ var CtrlMiningEnergy = {
 			
 			//生成creep
 			var creepCount = roomInfo.creepCount(ENUM.CREEP_TYPE.MINER);
-			if (creepCount <= 0) {
+			if (creepCount <= 3) {
+			//if (false) {
 				var event = {name: ENUM.EVNET_NAME.NEED_CREATE_CREEP, 
 							body:[WORK,MOVE,CARRY], 
 							type: ENUM.CREEP_TYPE.MINER,
 							priority: ENUM.PRIORITY.LV_1}
-				EventManager.dispatch(event)
+				EventManager.ins().dispatch(event)
 			}
-			/*
-			else if (spawn.energy == spawn.energyCapacity) {
-				//TODO: 
-				if (_.size(Game.creeps) < 10){
-					var event = {name: ENUM.EVNET_NAME.NEED_CREATE_CREEP, 
-								body:[WORK,MOVE,CARRY], 
-								type: ENUM.CREEP_TYPE.MINER};
-					EventManager.dispatch(event); 
-				}
-				
-			}*/
 		}
 		
 		ins.eventHandleCreepCreated = function(event) {
@@ -141,11 +125,7 @@ var CtrlMiningEnergy = {
 		ins.eventHandleCreepLoaded = function(event) {
 			if (event.roomName == ins._roomName && event.type == ENUM.CREEP_TYPE.MINER) {
 				var creep = Game.creeps[event.creepName];
-				
-				//if (!!!creep.memory.lineSeq) console.log(creep.name);
-				console.log(creep.memory.type);  
 				ins._lines[creep.memory.lineSeq].addCreep(event.creepName); 
-				
 				console.log("MINING load creep(" + creep.name + ")");
 			}
 		}

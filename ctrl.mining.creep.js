@@ -9,8 +9,8 @@
 
 var Listener = require('event.listener');
 var ENUM = require('enum'); 
-var EventManager = require('event.manager').ins();
 var Tool = require('tool');
+var EventManager = require('event.manager');
 
 var CtrlMiningCreep = {
 	createNew : function(creepName, path, lineSeq) {
@@ -34,7 +34,7 @@ var CtrlMiningCreep = {
 		if (!!!creep) return undefined;
 		
 		creep.memory.lineSeq = ins._lineSeq;
-		creep.memory.stat = ins._stat;
+		if (!!!creep.memory.stat) creep.memory.stat = ins._stat;
 		creep.memory.path = Tool.serializePath(ins._path);
 				
 		ins.tick = function() {
@@ -94,12 +94,23 @@ var CtrlMiningCreep = {
 				break; 
 			case STAT.DUMPING:
 				{
+				    
 					var storage = creep.pos.findClosestByRange(FIND_MY_SPAWNS);
 					var ret = creep.transfer(storage, RESOURCE_ENERGY);
+					if (ERR_FULL == ret) {
+					    EventManager.ins().dispatch({name: ENUM.EVNET_NAME.ENERGY_WAITFOR_ADD, roomName:creep.room.name});
+					}
+					
 					if (_.sum(creep.carry) == 0){
 						ins._stat = STAT.GO;
 						creep.memory.stat = ins._stat;
 					}
+					
+					/*
+					if (dumpCount > 0) {
+					    EventManager.ins().dispatch({name: ENUM.EVNET_NAME.ENERGY_ADD, type:ENUM.ENERGY_ADD_FOR.MINE, count : dumpCount});
+					}
+					*/
 				}
 				break;
 			}

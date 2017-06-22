@@ -17,7 +17,6 @@ var worldInfo = _.assign(_.clone(Tool.Singleton), {
         
 		//创建房间信息
         _.forEach(Game.rooms, function(value,key) {
-			console.log(key);
 			var roomInfo = RoomInfo.createNew(key); 
 			roomInfo.init();
 			ins.roomInfos[key] = roomInfo;

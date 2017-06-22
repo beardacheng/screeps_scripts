@@ -2,9 +2,9 @@
 
 var Listener = require('event.listener');
 var ENUM = require('enum'); 
-var EventManager = require('event.manager').ins();
 var Tool = require('tool');
 var Base = require('base');
+var EventManager = require('event.manager');
 
 var CtrlControllerCreep = {
 	createNew : function(creepName, path) {
@@ -32,7 +32,7 @@ var CtrlControllerCreep = {
 		if (!!!creep) return undefined; 
 		ins._roomName = creep.room.name;
 		
-		creep.memory.stat = ins._stat;
+		if (!!!creep.memory.stat) creep.memory.stat = ins._stat; 
 		creep.memory.path = Tool.serializePath(ins._path);
 				
 		ins.tick = function() {
@@ -41,6 +41,7 @@ var CtrlControllerCreep = {
 			if (!!!creep) return;   
 			
 			ins._stat = creep.memory.stat;
+			//creep.say(ins._stat);
 			switch(ins._stat) { 
 			case STAT.INIT:
 				{
@@ -57,10 +58,15 @@ var CtrlControllerCreep = {
 				break;
 			case STAT.WITHDRAW:
 				{
-					creep.withdraw(spawn, RESOURCE_ENERGY, creep.carryCapacity - _.sum(creep.carry));
+					var ret = creep.withdraw(spawn, RESOURCE_ENERGY, creep.carryCapacity - _.sum(creep.carry));
+					if (ERR_NOT_ENOUGH_RESOURCES == ret) {
+					    EventManager.ins().dispatch({name: ENUM.EVNET_NAME.ENERGY_WAITFOR_SUB, roomName:creep.room.name});
+					}
+					
 					if (creep.carryCapacity == _.sum(creep.carry)) {
 						ins._stat = STAT.GO;
 						creep.memory.stat = ins._stat;
+						EventManager.ins().dispatch({name: ENUM.EVNET_NAME.ENERGY_SUB, type:ENUM.ENERGY_SUB_FOR.CONTROLLER, count : creep.carryCapacity});
 					}
 					else {
 						

@@ -6,19 +6,19 @@
  * var mod = require('base');
  * mod.thing == 'a thing'; // true
  */
-var WorldInfo = require('info.world').ins();
+var WorldInfo = require('info.world');
 
 var Base = {
 	getSpawn : function(){
-		return Game.spawns[WorldInfo.roomInfo(this._roomName).spawnName()];
+		return Game.spawns[this.getRoomInfo().spawnName()];
 	},
 	
 	getRoom : function() {
 		return Game.rooms[this._roomName];
-	},
+	},  
 	
 	getRoomInfo : function() {
-		return WorldInfo.roomInfo(this._roomName);
+		return WorldInfo.ins().roomInfo(this._roomName);
 	},
 
 }

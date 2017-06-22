@@ -12,7 +12,6 @@ var Tool = {
 	    _ins : undefined,
 		ins : function() {
 			if (this._ins == undefined) { 
-				console.log('new singleton');
 				this._ins = this.createNew();
 			}        
 			return this._ins;

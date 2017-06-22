@@ -52,7 +52,13 @@ var roomInfo = {
 			return ins._spawnName;
 		}
 		
+		var lastUpdateTime = 0;
 		ins.creepCount = function(type) {
+		    if (Game.time != lastUpdateTime) {
+		        ins.updateCreepInfo();
+		        lastUpdateTime = Game.time;
+		    }
+		    
 			return ins.creepInfo.typeCount[type] == undefined ? 0 : ins.creepInfo.typeCount[type];
 		}
         

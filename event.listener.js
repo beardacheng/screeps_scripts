@@ -1,4 +1,4 @@
-var EventManager = require('event.manager').ins();
+var EventManager = require('event.manager');
 
 var EventListener = {
 	_uids : [],
@@ -20,11 +20,11 @@ var EventListener = {
 		}
 		
 		ins.AddListener = function(eventName, dealFunc) {
-			EventManager.add(eventName, this, dealFunc)
+			EventManager.ins().add(eventName, this, dealFunc)
 		}
 		
 		ins.RemoveListener = function(eventName) {
-			EventManager.remove(eventName, this);
+			EventManager.ins().remove(eventName, this);
 		}
 		
 		return ins;

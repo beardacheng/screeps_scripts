@@ -2,6 +2,7 @@ var Tool = require('tool');
 var CTRL_CONTROLLER = require("ctrl.controller");
 var CTRL_CREATE_CREEP = require("ctrl.create.creep");
 var CTRL_MINING_ENERGY = require("ctrl.mining.energy");
+var CtrlResourceEnergy = require('ctrl.resource.energy');
 var WorldInfo = require('info.world');
 var EventManager = require('event.manager');
 
@@ -22,6 +23,7 @@ var HQ = _.assign(_.clone(Tool.Singleton), {
 			initCtrl(value, key, CTRL_CONTROLLER);
 			initCtrl(value, key, CTRL_MINING_ENERGY); 
 			initCtrl(value, key, CTRL_CREATE_CREEP);
+			initCtrl(value, key, CtrlResourceEnergy);
         })
 		
 		ins.deinit = function() {
