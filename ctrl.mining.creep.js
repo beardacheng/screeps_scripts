@@ -13,7 +13,7 @@ var Tool = require('tool');
 var EventManager = require('event.manager');
 var CtrlCreep = require('ctrl.creep');
 
-var CtrlMiningCreep = {
+var CtrlMiningCreep = {                            
 	createNew : function(creepName, path, lineSeq, isNew) {
 		var STAT = {
 			INIT : 0,
@@ -43,7 +43,7 @@ var CtrlMiningCreep = {
 			if (!!!creep) return;   
 			
 			ins._stat = creep.memory.stat;
-			//creep.say(ins._stat);
+			// creep.say(ins._stat);
 			switch(ins._stat) { 
 			case STAT.INIT:
 				{
@@ -53,6 +53,8 @@ var CtrlMiningCreep = {
 						return;
 					} 
 					else {
+						ins.setRoundBegin();
+						
 						ins._stat = STAT.GO;
 						creep.memory.stat = ins._stat;
 					}
@@ -60,7 +62,9 @@ var CtrlMiningCreep = {
 				break;
 			case STAT.GO:
 				{
-					ins.pickEnergyOnFloor(creep);
+					if (OK == ins.pickEnergyOnFloor(creep)) {
+						break;
+					}
 					
 					if (creep.carryCapacity == creep.carry[RESOURCE_ENERGY]) {
 						ins._stat = STAT.BACK;
@@ -103,23 +107,19 @@ var CtrlMiningCreep = {
 				break; 
 			case STAT.DUMPING:
 				{
-				    
 					var storage = creep.pos.findClosestByRange(FIND_MY_SPAWNS);
 					var ret = creep.transfer(storage, RESOURCE_ENERGY);
 					if (ERR_FULL == ret) {
-					    EventManager.ins().dispatch({name: ENUM.EVNET_NAME.ENERGY_WAITFOR_ADD, roomName:creep.room.name});
+					    EventManager.ins().dispatch({name: ENUM.EVENT_NAME.ENERGY_WAITFOR_ADD, roomName:creep.room.name});
 					}
 					
 					if (_.sum(creep.carry) == 0){
+						ins.setRoundEnd();
+						ins.setRoundBegin();
+						
 						ins._stat = STAT.GO;
 						creep.memory.stat = ins._stat;
 					}
-					
-					/*
-					if (dumpCount > 0) {
-					    EventManager.ins().dispatch({name: ENUM.EVNET_NAME.ENERGY_ADD, type:ENUM.ENERGY_ADD_FOR.MINE, count : dumpCount});
-					}
-					*/
 				}
 				break;
 			}

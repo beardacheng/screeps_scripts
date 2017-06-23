@@ -12,7 +12,7 @@ module.exports = {
 		LV_100 	: 	100,
 	},
 	
-	EVNET_NAME : {
+	EVENT_NAME : {
 		NEED_CREATE_CREEP : "NEED_CREATE_CREEP", //body, type, priority,
 		CREEP_CREATED : "CREEP_CREATED",  //creepName
 		CREEP_LOADED : "CREEP_LOADED", 		//creepName, type, roomName

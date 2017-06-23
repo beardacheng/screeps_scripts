@@ -8,7 +8,7 @@ var EventManager = require('event.manager');
 var CtrlCreep = require('ctrl.creep');
 
 var CtrlControllerCreep = {
-	createNew : function(creepName, path) {
+	createNew : function(creepName, path, isNew) {
 		var STAT = {
 			INIT : 0,
 			GO : 1,
@@ -33,7 +33,7 @@ var CtrlControllerCreep = {
 		if (!!!creep) return undefined; 
 		ins._roomName = creep.room.name;
 		
-		if (!!!creep.memory.stat) creep.memory.stat = ins._stat; 
+		if (!!isNew || !!!creep.memory.stat) creep.memory.stat = ins._stat; 
 		creep.memory.path = Tool.serializePath(ins._path);
 				
 		ins.tick = function() {
@@ -42,7 +42,7 @@ var CtrlControllerCreep = {
 			if (!!!creep) return;   
 			
 			ins._stat = creep.memory.stat;
-			//creep.say(ins._stat);
+			// creep.say(ins._stat);
 			switch(ins._stat) { 
 			case STAT.INIT:
 				{
@@ -52,6 +52,7 @@ var CtrlControllerCreep = {
 						return;
 					} 
 					else {
+						ins.setRoundBegin();
 						ins._stat = STAT.WITHDRAW;
 						creep.memory.stat = ins._stat;
 					}
@@ -61,13 +62,13 @@ var CtrlControllerCreep = {
 				{
 					var ret = creep.withdraw(spawn, RESOURCE_ENERGY, creep.carryCapacity - _.sum(creep.carry));
 					if (ERR_NOT_ENOUGH_RESOURCES == ret) {
-					    EventManager.ins().dispatch({name: ENUM.EVNET_NAME.ENERGY_WAITFOR_SUB, roomName:creep.room.name});
+					    EventManager.ins().dispatch({name: ENUM.EVENT_NAME.ENERGY_WAITFOR_SUB, roomName:creep.room.name});
 					}
 					
 					if (creep.carryCapacity == _.sum(creep.carry)) {
 						ins._stat = STAT.GO;
 						creep.memory.stat = ins._stat;
-						EventManager.ins().dispatch({name: ENUM.EVNET_NAME.ENERGY_SUB, type:ENUM.ENERGY_SUB_FOR.CONTROLLER, count : creep.carryCapacity});
+						EventManager.ins().dispatch({name: ENUM.EVENT_NAME.ENERGY_SUB, type:ENUM.ENERGY_SUB_FOR.CONTROLLER, count : creep.carryCapacity});
 					}
 					else {
 						
@@ -119,13 +120,18 @@ var CtrlControllerCreep = {
 				break;
 			case STAT.BACK:
 				{
-					ins.pickEnergyOnFloor(creep); 
+					if (OK == ins.pickEnergyOnFloor(creep)) {
+						break;
+					}
 					
 					var destPos = _.last(ins._backPath);
 					if (!_.isEqual(creep.pos, destPos)) {
 						var ret = creep.moveByPath(ins._backPath);
 					}
 					else {
+						ins.setRoundEnd();
+						ins.setRoundBegin();
+						
 						ins._stat = STAT.WITHDRAW;
 						creep.memory.stat = ins._stat;
 					}

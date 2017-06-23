@@ -69,8 +69,8 @@ var roomInfo = {
         }
 		
 		ins.initEvent = function(){
-			ins.AddListener(ENUM.EVNET_NAME.CREEP_CREATED, ins.eventHandleInitCreep);
-			ins.AddListener(ENUM.EVNET_NAME.CREEP_LOADED, ins.eventHandleInitCreep);
+			ins.AddListener(ENUM.EVENT_NAME.CREEP_CREATED, ins.eventHandleInitCreep);
+			ins.AddListener(ENUM.EVENT_NAME.CREEP_LOADED, ins.eventHandleInitCreep);
 		}
 		
 		ins.eventHandleInitCreep = function(event) {

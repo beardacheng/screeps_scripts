@@ -19,6 +19,7 @@ var CtrlMiningLine = {
 			_seq : seq, 
 			_path : path,
 			_creeps : [],
+			_priority : 0,
 		});
 		
 		ins.init = function() {
@@ -27,6 +28,8 @@ var CtrlMiningLine = {
 		
 		ins.tick = function() { 
 			var invalidCreep = [];
+			var roundUsedSecs = [];
+			
 			_.forEach(ins._creeps, function(v){
 				var creep = Game.creeps[v._creepName];
 				if (!!!creep) {
@@ -35,8 +38,14 @@ var CtrlMiningLine = {
 				}
 				//console.log("mine seq " + ins._seq + " tick, creep " + creep.name);
 				v.tick();
+				roundUsedSecs.push(v.getRoundUsedSecs()); 
 			})
 			_.pull(ins._creeps, invalidCreep);
+			
+			if (_.size(roundUsedSecs) > 0) { 
+				ins._priority = _.floor(_.sum(roundUsedSecs) / _.size(roundUsedSecs));
+				console.log(roundUsedSecs);
+			}
 		}
 		 
 		ins.addCreep = function(creepName, isNew) {

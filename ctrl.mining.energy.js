@@ -61,7 +61,6 @@ var CtrlMiningEnergy = {
 			var mineAt = to;
 
 			var posesAround = Tool.findInRange(room, to, 1, 'terrain', ['swamp', 'plain']);
-			
 			while (_.size(posesAround) > 0) {
 				posesAround = _.map(posesAround, function(v) {
 					to.x = v.x;
@@ -88,31 +87,35 @@ var CtrlMiningEnergy = {
 	    }
 		
 		ins.initEvent = function(){
-			ins.AddListener(ENUM.EVNET_NAME.CREEP_CREATED, ins.eventHandleCreepCreated);
-			ins.AddListener(ENUM.EVNET_NAME.CREEP_LOADED, ins.eventHandleCreepLoaded);
+			ins.AddListener(ENUM.EVENT_NAME.CREEP_CREATED, ins.eventHandleCreepCreated);
+			ins.AddListener(ENUM.EVENT_NAME.CREEP_LOADED, ins.eventHandleCreepLoaded);
 		}
 		
-		ins.tick = function() {			
+		ins.tick = function() {	
 			//画出线路
-		    _.forEach(ins._paths, function(value){
-		        room.visual.poly(value, {lineStyle:"dashed"});  
-		    })
+			ins.showLine();
 			
 			//驱动线路
 			_.forEach(ins._lines, function(v){ 
 				v.tick();
 			})
 			
-			//生成creep
+			//生成creep : TODO
 			var creepCount = roomInfo.creepCount(ENUM.CREEP_TYPE.MINER);
 			if (creepCount <= 3) {
 			//if (false) {
-				var event = {name: ENUM.EVNET_NAME.NEED_CREATE_CREEP, 
+				var event = {name: ENUM.EVENT_NAME.NEED_CREATE_CREEP, 
 							body:[WORK,MOVE,CARRY], 
 							type: ENUM.CREEP_TYPE.MINER,
 							priority: ENUM.PRIORITY.LV_1}
 				EventManager.ins().dispatch(event)
 			}
+		}
+
+		ins.showLine = function() {
+		    _.forEach(ins._paths, function(value){
+		        room.visual.poly(value, {lineStyle:"dashed"});  
+		    })
 		}
 		
 		ins.eventHandleCreepCreated = function(event) {

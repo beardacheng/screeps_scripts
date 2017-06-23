@@ -33,7 +33,7 @@ var EventManager = _.assign({
 		    //console.log("dispatch " + event.name + ", listener count "  + _.size(this._listeners))
 			_.forEach(this._listeners, function(value, key) {
 				if (value._name == event.name) {
-					value._dealFunc.call(value._listener, event)
+					return !!!value._dealFunc.call(value._listener, event);
 				}
 			})
 		}

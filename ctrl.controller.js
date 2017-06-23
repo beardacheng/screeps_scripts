@@ -30,13 +30,13 @@ var CtrlController = {
 		}
 		
 		ins.initEvent = function(){
-			ins.AddListener(ENUM.EVNET_NAME.CREEP_CREATED, ins.eventHandleInitCreep);
-			ins.AddListener(ENUM.EVNET_NAME.CREEP_LOADED, ins.eventHandleInitCreep);
+			ins.AddListener(ENUM.EVENT_NAME.CREEP_CREATED, ins.eventHandleInitCreep);
+			ins.AddListener(ENUM.EVENT_NAME.CREEP_LOADED, ins.eventHandleInitCreep);
 		}
 		
 		ins.eventHandleInitCreep = function(event) {  
 			if (event.type == ENUM.CREEP_TYPE.CONTROLLER) {
-				ins._creeps.push(CtrlControllerCreep.createNew(event.creepName, ins._path));
+				ins._creeps.push(CtrlControllerCreep.createNew(event.creepName, ins._path, event.name == ENUM.EVENT_NAME.CREEP_CREATED));
 				
 				console.log("CONTROLLER load creep(" + event.creepName + ")");
 			}
@@ -48,7 +48,7 @@ var CtrlController = {
 			
 			var creepCount = roomInfo.creepCount(ENUM.CREEP_TYPE.CONTROLLER);
 			if (creepCount <= 0) {
-				var event = {name: ENUM.EVNET_NAME.NEED_CREATE_CREEP, 
+				var event = {name: ENUM.EVENT_NAME.NEED_CREATE_CREEP, 
 							body:[WORK,MOVE,CARRY], 
 							type: ENUM.CREEP_TYPE.CONTROLLER}
 				EventManager.ins().dispatch(event)
