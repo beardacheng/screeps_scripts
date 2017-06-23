@@ -33,14 +33,14 @@ var CtrlMiningLine = {
 					invalidCreep.push(v); 
 					return true;
 				}
-				console.log("mine seq " + ins._seq + " tick, creep " + creep.name);
+				//console.log("mine seq " + ins._seq + " tick, creep " + creep.name);
 				v.tick();
 			})
 			_.pull(ins._creeps, invalidCreep);
 		}
 		 
-		ins.addCreep = function(creepName) {
-			ins._creeps.push(CtrlMiningCreep.createNew(creepName, ins._path, ins._seq)); 
+		ins.addCreep = function(creepName, isNew) {
+			ins._creeps.push(CtrlMiningCreep.createNew(creepName, ins._path, ins._seq, isNew)); 
 		};
 		
 		return ins;

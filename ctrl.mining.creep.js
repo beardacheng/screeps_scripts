@@ -11,9 +11,10 @@ var Listener = require('event.listener');
 var ENUM = require('enum'); 
 var Tool = require('tool');
 var EventManager = require('event.manager');
+var CtrlCreep = require('ctrl.creep');
 
 var CtrlMiningCreep = {
-	createNew : function(creepName, path, lineSeq) {
+	createNew : function(creepName, path, lineSeq, isNew) {
 		var STAT = {
 			INIT : 0,
 			GO : 1,
@@ -22,7 +23,7 @@ var CtrlMiningCreep = {
 			DUMPING : 4,
 		};
 		
-		var ins = _.assign(Listener.createNew(), { 
+		var ins = _.assign(Listener.createNew(), CtrlCreep.createNew(), { 
 			_creepName : creepName,
 			_lineSeq : lineSeq,
 			_path : path,
@@ -34,7 +35,7 @@ var CtrlMiningCreep = {
 		if (!!!creep) return undefined;
 		
 		creep.memory.lineSeq = ins._lineSeq;
-		if (!!!creep.memory.stat) creep.memory.stat = ins._stat;
+		if (!!isNew || !!!creep.memory.stat) creep.memory.stat = ins._stat;
 		creep.memory.path = Tool.serializePath(ins._path);
 				
 		ins.tick = function() {
@@ -42,6 +43,7 @@ var CtrlMiningCreep = {
 			if (!!!creep) return;   
 			
 			ins._stat = creep.memory.stat;
+			//creep.say(ins._stat);
 			switch(ins._stat) { 
 			case STAT.INIT:
 				{
@@ -58,11 +60,16 @@ var CtrlMiningCreep = {
 				break;
 			case STAT.GO:
 				{
+					ins.pickEnergyOnFloor(creep);
+					
+					if (creep.carryCapacity == creep.carry[RESOURCE_ENERGY]) {
+						ins._stat = STAT.BACK;
+						creep.memory.stat = ins._stat;
+					}
+					
 					var destPos = _.last(ins._path);
 					if (!_.isEqual(creep.pos, destPos)) {
 						creep.moveByPath(ins._path);
-						//console.log(ins._path);
-						//console.log(creep.pos);
 					}
 					else {
 						ins._stat = STAT.MINING;
@@ -85,6 +92,8 @@ var CtrlMiningCreep = {
 					var destPos = _.last(ins._backPath);
 					if (!_.isEqual(creep.pos, destPos)) {
 						var ret = creep.moveByPath(ins._backPath);
+						
+						//creep.say(ret);
 					}
 					else {
 						ins._stat = STAT.DUMPING;

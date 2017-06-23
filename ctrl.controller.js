@@ -47,7 +47,7 @@ var CtrlController = {
 			if (!!!controller) return; 
 			
 			var creepCount = roomInfo.creepCount(ENUM.CREEP_TYPE.CONTROLLER);
-			if (creepCount <= 1) {
+			if (creepCount <= 0) {
 				var event = {name: ENUM.EVNET_NAME.NEED_CREATE_CREEP, 
 							body:[WORK,MOVE,CARRY], 
 							type: ENUM.CREEP_TYPE.CONTROLLER}
@@ -63,7 +63,7 @@ var CtrlController = {
 					invalidCreep.push(v);
 					return true; 
 				}
-				console.log("controller tick, creep " + creep.name);
+				//console.log("controller tick, creep " + creep.name);
 				v.tick();
 			})
 			_.pull(ins._creeps, invalidCreep);

@@ -1,12 +1,6 @@
-//var EventManager = require("event.manager").ins();
-var Tool = require('tool'); 
 
-//var Listener = require('event.listener');
-//var ENUM = require('enum'); 
-//var WorldInfo = require('info.world');
-//var RoomInfo = require("info.room");
+var Tool = require('tool'); 
 var HQ = require("ctrl.hq");
-//var CTRL_CONTROLLER = require("ctrl.controller");
 
 Tool.init();
 var myRoomNames = [];

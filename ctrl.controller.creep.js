@@ -5,6 +5,7 @@ var ENUM = require('enum');
 var Tool = require('tool');
 var Base = require('base');
 var EventManager = require('event.manager');
+var CtrlCreep = require('ctrl.creep');
 
 var CtrlControllerCreep = {
 	createNew : function(creepName, path) {
@@ -21,7 +22,7 @@ var CtrlControllerCreep = {
 			PATH_END : -2,
 		});
 		
-		var ins = _.assign(Listener.createNew(), Base, { 
+		var ins = _.assign(Listener.createNew(), Base, CtrlCreep.createNew(), { 
 			_creepName : creepName, 
 			_path : path,
 			_backPath : _(_.clone(path)).reverse().value(), 
@@ -118,6 +119,8 @@ var CtrlControllerCreep = {
 				break;
 			case STAT.BACK:
 				{
+					ins.pickEnergyOnFloor(creep); 
+					
 					var destPos = _.last(ins._backPath);
 					if (!_.isEqual(creep.pos, destPos)) {
 						var ret = creep.moveByPath(ins._backPath);

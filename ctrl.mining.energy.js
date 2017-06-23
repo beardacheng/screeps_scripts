@@ -118,7 +118,7 @@ var CtrlMiningEnergy = {
 		ins.eventHandleCreepCreated = function(event) {
 			//TODO
 			if (event.type == ENUM.CREEP_TYPE.MINER) { 
-				ins._lines[0].addCreep(event.creepName);
+				ins._lines[0].addCreep(event.creepName, true);
 			}
 		}
 		

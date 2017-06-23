@@ -25,10 +25,10 @@ var CtrlCreateCreep = {
 		
 		ins.handleEventCreateCreep = function(event) { 
 		    spawn = ins.getSpawn();
-			console.log("recv event " + ENUM.EVNET_NAME.NEED_CREATE_CREEP + " type = " + event.type);
+			//console.log("recv event " + ENUM.EVNET_NAME.NEED_CREATE_CREEP + " type = " + event.type);
 			var ret = spawn.canCreateCreep(event.body);
 			if (OK != ret) {
-			    console.log("can't create, ret " + ret + " body is " + event.body + " total energy is " + spawn.energy + " name is " + spawn.name);
+			    //console.log("can't create, ret " + ret + " body is " + event.body + " total energy is " + spawn.energy + " name is " + spawn.name);
 			    return; 
 			}
 			
