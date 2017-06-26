@@ -14,12 +14,12 @@ var Global = _.assign(_.clone(Tool.Singleton), {
 				
 		ins.init = function() {
 			ins._otherIDs = [];
-			for (var i = 0; i < Global.CPU_COUNT; i++) {
+			for (var i = 0; i < Global.CPU_COUNT; i++) { 
 				if (i != ins._id) ins._otherIDs.push(i); 
 			}
 		}		
 		
-		ins.SendData = function(data) {
+		ins.sendData = function(data) {
 			_.each(ins._otherIDs, function(v) {
 				var org = JSON.parse(RawMemory.segments[v]);
 				org.push(data);
@@ -27,7 +27,7 @@ var Global = _.assign(_.clone(Tool.Singleton), {
 			})
 		}
 		
-		ins.RecvData = function() { 
+		ins.recvData = function() { 
 			var memory = JSON.parse(RawMemory.segments[ins._id]);			
 			if (_.size(memory) > 0) {
 				var data = _.head(memory); 
@@ -39,14 +39,6 @@ var Global = _.assign(_.clone(Tool.Singleton), {
 		}
 		
 		ins.tick = function() {
-			RawMemory.setActiveSegments([0,1]);
-			if (preticked) {
-				preticked = true;
-				return; 
-			}
-			
-			ins.SendData(Game.time);
-			var data = ins.RecvData();
 		}
 		
 		return ins;

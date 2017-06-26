@@ -16,7 +16,7 @@ var Base = require('base');
 
 var CtrlMiningEnergy = {
     createNew : function(roomName) {
-		var ins = _.assign(Listener.createNew(), Base, { 
+		var ins = _.assign({}, Listener.createNew(), Base, { 
 			_roomName : roomName,
 			_paths : [],
 			_lines : [],
@@ -98,6 +98,7 @@ var CtrlMiningEnergy = {
 			//驱动线路
 			_.forEach(ins._lines, function(v){ 
 				v.tick();
+				// console.log('line ' + v._seq + ' pri is ' + v._priority);
 			})
 			
 			//生成creep : TODO
@@ -110,6 +111,7 @@ var CtrlMiningEnergy = {
 							priority: ENUM.PRIORITY.LV_1}
 				EventManager.ins().dispatch(event)
 			}
+			
 		}
 
 		ins.showLine = function() {
@@ -118,10 +120,24 @@ var CtrlMiningEnergy = {
 		    })
 		}
 		
+		ins.highestLine = function() {
+			var pri = 100;
+			var seq = -1;
+			
+			_.each(ins._lines, function(v,i){
+				if (v._priority < pri) {
+					pri = v._priority;
+					seq = i;
+				}
+			})
+			
+			return seq == -1 ? 0 : seq;
+		}
+		
+		
 		ins.eventHandleCreepCreated = function(event) {
-			//TODO
 			if (event.type == ENUM.CREEP_TYPE.MINER) { 
-				ins._lines[0].addCreep(event.creepName, true);
+				ins._lines[ins.highestLine()].addCreep(event.creepName, true);
 			}
 		}
 		

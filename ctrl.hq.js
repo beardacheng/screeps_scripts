@@ -36,6 +36,8 @@ var HQ = _.assign(_.clone(Tool.Singleton), {
 			_.forEach(ins.ctrls, function(value) {
 				value.tick();
 			})
+			
+			EventManager.ins().tick();
 		}
 		
 		return ins;

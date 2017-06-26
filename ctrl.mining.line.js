@@ -12,9 +12,11 @@ var EventManager = require('event.manager');
 var Tool = require('tool');
 var CtrlMiningCreep = require('ctrl.mining.creep');
 
+var CtrlCreep = require('ctrl.creep');
+
 var CtrlMiningLine = {
 	createNew : function(seq, roomName, path) {
-		var ins = _.assign(Listener.createNew(), { 
+		var ins = _.assign({}, Listener.createNew(), { 
 			_roomName : roomName,
 			_seq : seq, 
 			_path : path,
@@ -31,24 +33,25 @@ var CtrlMiningLine = {
 			var roundUsedSecs = [];
 			
 			_.forEach(ins._creeps, function(v){
-				var creep = Game.creeps[v._creepName];
+				var creep = Game.creeps[v._creepName]; 
 				if (!!!creep) {
 					invalidCreep.push(v); 
-					return true;
+					return true; 
 				}
 				//console.log("mine seq " + ins._seq + " tick, creep " + creep.name);
 				v.tick();
 				roundUsedSecs.push(v.getRoundUsedSecs()); 
 			})
-			_.pull(ins._creeps, invalidCreep);
+			_.pull(ins._creeps, invalidCreep); 
 			
-			if (_.size(roundUsedSecs) > 0) { 
+			if (_.size(roundUsedSecs) > 0) {  
 				ins._priority = _.floor(_.sum(roundUsedSecs) / _.size(roundUsedSecs));
-				console.log(roundUsedSecs);
-			}
+			} 
+			
 		}
 		 
-		ins.addCreep = function(creepName, isNew) {
+		ins.addCreep = function(creepName, isNew) { 			 
+			//console.log('new creep is ' + newCreep + ' seq is ' + ins._seq);
 			ins._creeps.push(CtrlMiningCreep.createNew(creepName, ins._path, ins._seq, isNew)); 
 		};
 		

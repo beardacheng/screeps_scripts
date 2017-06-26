@@ -6,7 +6,7 @@ var Base = require('base');
 
 var CtrlCreateCreep = {
 	createNew : function(roomName) {
-		var ins = _.assign(Listener.createNew(), Base, { 
+		var ins = _.assign({}, Listener.createNew(), Base, { 
 			_roomName : roomName,
 			_loadedCreeps : false,
 		});

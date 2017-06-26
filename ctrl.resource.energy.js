@@ -14,7 +14,7 @@ var Base = require('base');
 
 var CtrlResourceEnergy = {
     createNew : function(roomName) {
-		var ins = _.assign(Listener.createNew(), Base, { 
+		var ins = _.assign({}, Listener.createNew(), Base, { 
 			_roomName : roomName,
 		});
 		
@@ -25,15 +25,6 @@ var CtrlResourceEnergy = {
 		room.memory.energy_sub_waited = 0;
 	
 	    ins.init = function() {
-	        /*
-	        ins.AddListener(ENUM.EVENT_NAME.ENERGY_ADD, function(event) {
-	            //room.memory.energy_added += event.count;
-	        });
-	        
-	        ins.AddListener(ENUM.EVENT_NAME.ENERGY_SUB, function(event) {
-	            //room.memory.energy_useed += event.count;
-	        });
-	        */
 	        ins.AddListener(ENUM.EVENT_NAME.ENERGY_WAITFOR_ADD, function(event) {
 	            if (event.roomName == ins._roomName) room.memory.energy_add_waited++;
 	        });

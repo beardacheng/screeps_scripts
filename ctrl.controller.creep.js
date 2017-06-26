@@ -17,13 +17,12 @@ var CtrlControllerCreep = {
 			DUMPING : 4,
 		};
 		
-		var AHEAD_STAT = _.assign(STAT, {
+		var AHEAD_STAT = _.assign({}, STAT, {
 			NO_CREEP : -1,
 			PATH_END : -2,
 		});
 		
-		var ins = _.assign(Listener.createNew(), Base, CtrlCreep.createNew(), { 
-			_creepName : creepName, 
+		var ins = _.assign({}, Base, CtrlCreep.createNew(creepName), {  
 			_path : path,
 			_backPath : _(_.clone(path)).reverse().value(), 
 			_stat : STAT.INIT,
@@ -37,6 +36,8 @@ var CtrlControllerCreep = {
 		creep.memory.path = Tool.serializePath(ins._path);
 				
 		ins.tick = function() {
+			//console.log(ins._creepName);
+			
 			creep = Game.creeps[ins._creepName]; 
 			spawn = ins.getSpawn();
 			if (!!!creep) return;   
@@ -129,7 +130,6 @@ var CtrlControllerCreep = {
 						var ret = creep.moveByPath(ins._backPath);
 					}
 					else {
-						ins.setRoundEnd();
 						ins.setRoundBegin();
 						
 						ins._stat = STAT.WITHDRAW;

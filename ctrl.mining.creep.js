@@ -12,9 +12,10 @@ var ENUM = require('enum');
 var Tool = require('tool');
 var EventManager = require('event.manager');
 var CtrlCreep = require('ctrl.creep');
+var Base = require('base');
 
 var CtrlMiningCreep = {                            
-	createNew : function(creepName, path, lineSeq, isNew) {
+	createNew : function(creepName, path, lineSeq, isNew, a) {
 		var STAT = {
 			INIT : 0,
 			GO : 1,
@@ -23,22 +24,21 @@ var CtrlMiningCreep = {
 			DUMPING : 4,
 		};
 		
-		var ins = _.assign(Listener.createNew(), CtrlCreep.createNew(), { 
-			_creepName : creepName,
+		var ins = _.assign({}, Base, CtrlCreep.createNew(creepName, a), {  
 			_lineSeq : lineSeq,
 			_path : path,
 			_backPath : _(_.clone(path)).reverse().value(), 
 			_stat : STAT.INIT,
 		});
 		
-		var creep = Game.creeps[ins._creepName];
+		var creep = Game.creeps[ins._creepName]; 
 		if (!!!creep) return undefined;
 		
 		creep.memory.lineSeq = ins._lineSeq;
 		if (!!isNew || !!!creep.memory.stat) creep.memory.stat = ins._stat;
 		creep.memory.path = Tool.serializePath(ins._path);
 				
-		ins.tick = function() {
+		ins.tick = function() {			
 			creep = Game.creeps[ins._creepName]; 
 			if (!!!creep) return;   
 			
@@ -52,9 +52,7 @@ var CtrlMiningCreep = {
 						var ret = creep.moveTo(orgPos);
 						return;
 					} 
-					else {
-						ins.setRoundBegin();
-						
+					else {						
 						ins._stat = STAT.GO;
 						creep.memory.stat = ins._stat;
 					}
@@ -113,8 +111,7 @@ var CtrlMiningCreep = {
 					    EventManager.ins().dispatch({name: ENUM.EVENT_NAME.ENERGY_WAITFOR_ADD, roomName:creep.room.name});
 					}
 					
-					if (_.sum(creep.carry) == 0){
-						ins.setRoundEnd();
+					if (_.sum(creep.carry) == 0){ 
 						ins.setRoundBegin();
 						
 						ins._stat = STAT.GO;

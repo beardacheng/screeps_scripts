@@ -5,12 +5,20 @@ var Tool = require('tool');
 var Base = require('base');
 
 var CtrlCreep = {
-	createNew : function() {
-		var ins = {
+	createNew : function(creepName, a) {
+		var ins = _.assign({}, Listener.createNew(), {
+			_creepName : creepName,
 			_setoffTime : Game.time,
 			_roundUsedSecs : 100,
-			_lastRoundUsedSecs : 100, 
-		};
+			_lastRoundUsedSecs : 100,  
+		});
+		
+		ins.AddListener(ENUM.EVENT_NAME.CREEP_ROUND_END, function(event) {
+			if (ins._creepName == event.creepName) {
+				ins._lastRoundUsedSecs = event.roundSecs;
+				return false;
+			}
+		});
 		
 		ins.pickEnergyOnFloor = function(creep) {
 			if (!!!creep) return;
@@ -23,15 +31,12 @@ var CtrlCreep = {
 		}
 		
 		ins.setRoundBegin = function() {
+			ins._roundUsedSecs = Game.time - ins._setoffTime;
+			EventManager.ins().dispatch({name: ENUM.EVENT_NAME.CREEP_ROUND_END, creepName:ins._creepName, roundSecs : ins._roundUsedSecs});
 			ins._setoffTime = Game.time;
 		}
 		
-		ins.setRoundEnd = function() {
-			ins._lastRoundUsedSecs = ins._roundUsedSecs;
-			ins._roundUsedSecs = Game.time - ins._setoffTime;
-			console.log("!!" + ins._roundUsedSecs);
-		}
-		
+
 		ins.getRoundUsedSecs = function() {			
 			return ins._lastRoundUsedSecs;
 		}

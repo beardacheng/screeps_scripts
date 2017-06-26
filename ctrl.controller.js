@@ -7,7 +7,7 @@ var Base = require('base');
 
 var CtrlController = {
 	createNew : function(roomName) {
-		var ins = _.assign(Listener.createNew(), Base, { 
+		var ins = _.assign({}, Listener.createNew(), Base, { 
 			_roomName : roomName,
 			_creeps : []
 		})

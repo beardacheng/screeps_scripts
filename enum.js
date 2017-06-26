@@ -16,6 +16,7 @@ module.exports = {
 		NEED_CREATE_CREEP : "NEED_CREATE_CREEP", //body, type, priority,
 		CREEP_CREATED : "CREEP_CREATED",  //creepName
 		CREEP_LOADED : "CREEP_LOADED", 		//creepName, type, roomName
+		CREEP_ROUND_END : "CREEP_ROUND_END", //creepName, roundSecs
 		
 		ENERGY_ADD : "ENERGY_ADD",      //添加energy:  type , count
 		ENERGY_SUB : "ENERGY_SUB",      //使用energy:  type , count
@@ -23,7 +24,16 @@ module.exports = {
 		
 		ENERGY_WAITFOR_ADD : "ENERGY_WAITFOR_ADD", //roomName
 		ENERGY_WAITFOR_SUB : "ENERGY_WAITFOR_SUB", //roomName
-	} ,
+		
+		BroadcastEvents : function() {
+			return [this.CREEP_CREATED, 
+					this.ENERGY_ADD,
+					this.ENERGY_SUB,
+					this.ENERGY_WAITFOR_ADD, 
+					this.ENERGY_WAITFOR_SUB, 
+					this.CREEP_ROUND_END];
+		},
+	},
 	
 	ENERGY_ADD_FOR : {
 	    MINE : "MINE",                      //挖矿

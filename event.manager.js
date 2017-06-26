@@ -8,6 +8,8 @@
  */
 
 var Tool = require('tool');
+var Global = require('global');
+var ENUM = require('enum');
 
 var EventManager = _.assign({
 	createNew : function() {
@@ -15,8 +17,8 @@ var EventManager = _.assign({
 			_listeners : {}
 		}
 		
-		ins.add = function(eventName, listener, dealFunc) {
-			var key = eventName + "_" + listener;
+		ins.add = function(eventName, listener, dealFunc) { 
+			var key = eventName + "_" + listener;  
 			this._listeners[key] = {
 				_name : eventName,
 				_listener : listener,
@@ -30,12 +32,30 @@ var EventManager = _.assign({
 		}
 		
 		ins.dispatch = function(event) {
-		    //console.log("dispatch " + event.name + ", listener count "  + _.size(this._listeners))
-			_.forEach(this._listeners, function(value, key) {
+		    // console.log("dispatch " + event.name + ", listener count "  + _.size(this._listeners))
+			ins.handleEvent(event);
+			
+			if (_.indexOf(ENUM.EVENT_NAME.BroadcastEvents(), event.name) != -1) {
+				// console.log('send global event ' + event.name);
+				Global.ins().sendData(event);
+			}
+		}
+		
+		ins.handleEvent = function(event) {
+			_.forEach(ins._listeners, function(value, key) {
 				if (value._name == event.name) {
 					return !!!value._dealFunc.call(value._listener, event);
 				}
 			})
+		}
+		
+		ins.tick = function() {
+			var event = Global.ins().recvData(); 
+			while(event != null) {				
+				// console.log('recv global event ' + event.name);
+				ins.handleEvent(event);
+				event = Global.ins().recvData();
+			}
 		}
 		
 		return ins;
