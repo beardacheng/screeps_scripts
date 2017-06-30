@@ -13,6 +13,10 @@ var Log = {
 		this.log("DEBUG", v, true);
 	},
 	
+	error : function(v) {
+		this.log("ERROR", v, true);
+	},
+	
 	log : function(type, v, showFileAndLine) {
 		var fileAndLine = ""
 		
@@ -20,6 +24,7 @@ var Log = {
 			try {
 				throw new Error();
 			} catch (e) {
+				// console.log(e.stack);
 				fileAndLine = e.stack.replace(/Error\n/).split(/\n/)[2].replace(/^.*\((.*)\).*$/, "$1");
 				fileAndLine = "(" + fileAndLine + ")";
 			}

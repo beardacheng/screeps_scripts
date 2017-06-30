@@ -12,18 +12,19 @@ var EventManager = require('event.manager');
 var Tool = require('tool');
 var CtrlMiningCreep = require('ctrl.mining.creep'); 
 var Log = require('log');
-
+var Base = require('base');
 var CtrlCreep = require('ctrl.creep');
 
 var CtrlMiningLine = {
 	createNew : function(seq, roomName, path) {
-		var ins = _.assign({}, Listener.createNew(), { 
+		var ins = _.assign({}, Base, Listener.createNew(), { 
 			_roomName : roomName,
 			_seq : seq, 
 			_path : path,
 			_creeps : [],
 			_priority : _.size(path),
-			_full : false,
+			_full : true,
+			_canBuild : false,
 		});
 		
 		ins.AddListener(ENUM.EVENT_NAME.MINE_LINE_FULL, function(event) {
@@ -33,42 +34,55 @@ var CtrlMiningLine = {
 			}
 		});
 		
+		ins.AddListener(ENUM.EVENT_NAME.ENERGY_OVER_FULL, function(event) {
+			if (event.roomName == ins._roomName) {
+				ins._canBuild = true;
+			}
+		});
+		
 		ins.tick = function() { 
-			var invalidCreep = [];
+			var validSceeps = [];
 			var roundUsedSecs = [];
+			var spawn = ins.getSpawn();
+			
+			if (spawn.energy != spawn.energyCapacity) ins._canBuild = false;
 			
 			_.forEach(ins._creeps, function(v){
 				var creep = Game.creeps[v._creepName]; 
 				if (!!!creep) {
-					invalidCreep.push(v); 
-					return true; 
+					return true;
 				}
 				//console.log("mine seq " + ins._seq + " tick, creep " + creep.name);
 				v.tick();
 				roundUsedSecs.push(v.getRoundUsedSecs()); 
+				validSceeps.push(v); 
 			})
-			_.pull(ins._creeps, invalidCreep);  
+				
+			ins._creeps = validSceeps;
 			
 			//更新优先级
 			ins.updatePriority();
 			
-			//build road
 		};
 		
 		ins.updatePriority = function() {
 			var roundUsedSecs = [];
 			_.forEach(ins._creeps, function(v){				
-				roundUsedSecs.push(v.getRoundUsedSecs()); 
+				roundUsedSecs.push(v.getRoundUsedSecs());  
 			})
 			
 			//计算creep创建优先级
 			if (_.size(roundUsedSecs) > 0) {  
 				ins._priority = _.floor(_.sum(roundUsedSecs) / _.size(roundUsedSecs));
 			}
+			else {
+				ins._priority = 0;
+			}
+
 		}
 		
 		ins.isCanAddCreep = function() {
-			return _.size(ins._creeps) < _.size(ins._path) && !ins._full;
+			return _.size(ins._creeps) == 0 || (_.size(ins._creeps) < _.size(ins._path) && !ins._full);
 		}
 		 
 		ins.addCreep = function(creepName, isNew) { 			 

@@ -9,7 +9,7 @@ var CtrlCreep = require('ctrl.creep');
 var Log = require('log');
 
 var CtrlControllerCreep = {
-	createNew : function(creepName, path, isNew) {
+	createNew : function(creepName, path, isNew, line) {
 		var STAT = {
 			INIT : 0,
 			GO : 1,
@@ -81,6 +81,13 @@ var CtrlControllerCreep = {
 				break;
 			case STAT.GO:
 				{
+					ins.build(creep);					
+					if (_.sum(creep.carry) == 0) {
+						ins._stat = STAT.BACK;
+						creep.memory.stat = ins._stat;
+						break;
+					}
+					
 					var destPos = _.last(ins._path);
 					if (!_.isEqual(creep.pos, destPos)) {
 						var ret = creep.moveByPath(ins._path);
@@ -146,6 +153,20 @@ var CtrlControllerCreep = {
 						var ret = creep.moveByPath(ins._backPath);
 					}
 					else {
+						if (line._needRecycle) {
+							var spawn = ins.getSpawn();
+							
+							if (_.sum(creep.carry) != 0) {
+								ins._stat = STAT.GO;
+								creep.memory.stat = ins._stat;
+							}
+							else {
+								spawn.recycleCreep(creep);
+							}
+							
+							break;
+						}
+						
 						ins.setRoundBegin();
 						
 						ins._stat = STAT.WITHDRAW;

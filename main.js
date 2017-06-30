@@ -50,6 +50,6 @@ module.exports.loop = function() {
 	}
 	
 	HQ.ins().tick();	
-	Global.ins().tick();
+	Global.ins().tick();	
 } 
 

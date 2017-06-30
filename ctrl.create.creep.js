@@ -47,6 +47,8 @@ var CtrlCreateCreep = {
 		
 		ins.handleEventEnergyFull = function(event) {
 			if (ins._roomName != event.roomName) return;
+			var MINER_BODY = [WORK,WORK,MOVE,CARRY];
+			var CONTROLLER_BODY = [WORK,MOVE,CARRY,CARRY,CARRY];
 
 			//query
 			var queryEvent = {name: ENUM.EVENT_NAME.CHECK_NEED_CREAT_CREEP, roomName: ins._roomName, types:[]};
@@ -56,24 +58,24 @@ var CtrlCreateCreep = {
 			
 			if (roomInfo.creepCount(ENUM.CREEP_TYPE.MINER) < 3) {
 				if (_.indexOf(queryEvent.types, ENUM.CREEP_TYPE.MINER) != -1) {
-					ins.createCreep([WORK,MOVE,CARRY], ENUM.CREEP_TYPE.MINER);
+					ins.createCreep(MINER_BODY, ENUM.CREEP_TYPE.MINER);
 					return;
 				}
 			} 
 			else if (roomInfo.creepCount(ENUM.CREEP_TYPE.CONTROLLER) == 0) {
 				if (_.indexOf(queryEvent.types, ENUM.CREEP_TYPE.CONTROLLER) != -1) {
-					ins.createCreep([WORK,MOVE,CARRY], ENUM.CREEP_TYPE.CONTROLLER);
+					ins.createCreep(CONTROLLER_BODY, ENUM.CREEP_TYPE.CONTROLLER);
 					return;
 				}
 			} 
 			
 			if (_.indexOf(queryEvent.types, ENUM.CREEP_TYPE.MINER) != -1)
 			{
-				ins.createCreep([WORK,MOVE,CARRY], ENUM.CREEP_TYPE.MINER);
+				ins.createCreep(MINER_BODY, ENUM.CREEP_TYPE.MINER);
 			}
 			else if (_.indexOf(queryEvent.types, ENUM.CREEP_TYPE.CONTROLLER) != -1)
 			{
-				ins.createCreep([WORK,MOVE,CARRY], ENUM.CREEP_TYPE.CONTROLLER);
+				ins.createCreep(CONTROLLER_BODY, ENUM.CREEP_TYPE.CONTROLLER);
 			}
 			else {
 				EventManager.ins().dispatch({name:ENUM.EVENT_NAME.ENERGY_OVER_FULL, roomName: ins._roomName});

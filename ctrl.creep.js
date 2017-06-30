@@ -41,6 +41,22 @@ var CtrlCreep = {
 			return ins._lastRoundUsedSecs;
 		}
 		
+		ins.build = function(creep) {
+			var room = creep.room;
+			
+			var road = _.find(room.lookAt(creep.pos), {type:'structure'});
+			if (!!!road) {
+				room.createConstructionSite(creep.pos, STRUCTURE_ROAD);
+			}
+			
+			var area = Tool.createArea(creep.pos, 1);
+			var sites = room.lookForAtArea(LOOK_CONSTRUCTION_SITES, area.top, area.left, area.bottom, area.right, true);
+			if (_.size(sites) > 0) {
+				var site = _.find(sites, function(v) { if (v.x != creep.pos.x || v.y != creep.pos.y) return true;});
+				if (!!site) creep.build(site.constructionSite);
+			}
+		}
+		
 		return ins;
 	},
 }

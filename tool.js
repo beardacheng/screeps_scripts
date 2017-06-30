@@ -71,6 +71,15 @@ var Tool = {
 		
 		return ret;
 	},
+	
+	createArea : function(center, range) {
+		var x = center.x;
+		var y = center.y;
+		var MAX = 49;
+		
+		return {top : y - range < 0 ? 0 : y - range, bottom : y + range > MAX ? MAX : y + range, 
+				left : x - range < 0 ? 0 : x - range, right : x + range > MAX ? MAX : x + range};
+	},
 }
 
 

@@ -9,6 +9,7 @@
 
 var Listener = require('event.listener');
 var ENUM = require('enum'); 
+var Log = require('log');
 
 var roomInfo = {	
     createNew: function(roomName) {

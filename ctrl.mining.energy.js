@@ -22,6 +22,7 @@ var CtrlMiningEnergy = {
 			_roomName : roomName,
 			_paths : [],
 			_lines : [],
+			_newCreepSeq : -1,
 		});
 		
 		ins.init = function() {
@@ -106,7 +107,18 @@ var CtrlMiningEnergy = {
 		}
 		
 		ins.eventHandleCreateCreepCheck = function(event) {
-			if (ins.highestLineFree() == -1) return;
+			ins._newCreepSeq = ins.highestLineFree();
+			
+			if (-1 == ins._newCreepSeq) {
+				_.each(ins._lines, function(v) {
+					if (v.isCanAddCreep()) {
+						ins._newCreepSeq = v._seq;
+					return false;
+				}});
+			}
+
+			Log.debug('set new seq ' + ins._newCreepSeq);
+			if (ins._newCreepSeq == -1) return;
 			event.types.push(ENUM.CREEP_TYPE.MINER);
 		}
 		
@@ -120,9 +132,6 @@ var CtrlMiningEnergy = {
 				// console.log('line ' + v._seq + ' pri is ' + v._priority);
 			})			
 			
-			//
-			Log.debug(_.map(ins._lines, '_priority'));
-			Log.debug(ins.highestLineFree());
 		}
 
 		ins.showLine = function() {
@@ -141,7 +150,6 @@ var CtrlMiningEnergy = {
 			
 			_.each(ins._lines, function(v,i){  
 				if (!v.isCanAddCreep()) return true;
-				
 				if (v._priority < pri) {
 					pri = v._priority;
 					seq = i;
@@ -152,11 +160,18 @@ var CtrlMiningEnergy = {
 		}
 		
 		ins.eventHandleCreepCreated = function(event) {
-			if (event.type == ENUM.CREEP_TYPE.MINER) { 
-				var creep = Game.creeps[event.creepName];
+			if (event.type == ENUM.CREEP_TYPE.MINER) { 		
+				Log.debug(ins._newCreepSeq);		
 				
-				var lineSeq = !!creep.memory.lineSeq ? creep.memory.lineSeq : ins.highestLineFree();
-				ins._lines[lineSeq].addCreep(event.creepName, true);  
+				var seq;
+				var creep = Game.creeps[event.creepName];
+				if (_.isUndefined(creep)) return;
+				
+				if (creep.memory.lineSeq != undefined) seq = creep.memory.lineSeq;
+				else seq = ins._newCreepSeq;
+				
+				Log.debug(seq);	
+				ins._lines[seq].addCreep(event.creepName, true);  
 			}
 		}
 		

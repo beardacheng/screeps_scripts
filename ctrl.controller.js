@@ -6,12 +6,15 @@ var CtrlControllerCreep = require('ctrl.controller.creep');
 var Base = require('base');
 var Log = require('log');
 
+var MAX_COUNT = 10; 
+
 var CtrlController = {
 	createNew : function(roomName) {
 		var ins = _.assign({}, Listener.createNew(), Base, { 
 			_roomName : roomName,
 			_creeps : [], 
 			_isFull : false,
+			_needRecycle : false,
 		})
 		
 		var room = ins.getRoom();
@@ -92,13 +95,22 @@ var CtrlController = {
 		
 		ins.eventHandleCreateCreepCheck = function(event) {
 			var spawn = ins.getSpawn();
-			if (ins._isFull || spawn.energy < 50) return;
+			var roomInfo = ins.getRoomInfo();
+			
+			if (ins._isFull || spawn.energy < 50 || roomInfo.creepCount(ENUM.CREEP_TYPE.CONTROLLER)  >= MAX_COUNT) return;
 			event.types.push(ENUM.CREEP_TYPE.CONTROLLER);
 		}
 		
+		ins.tooManyCreep = function() {
+			// Log.debug(_(Game.creeps).filter(function(v) {return v.memory.type == ENUM.CREEP_TYPE.CONTROLLER;}).each(function(v){v.say(v.name);return true;}));
+			
+			return roomInfo.creepCount(ENUM.CREEP_TYPE.CONTROLLER) > MAX_COUNT;
+		}
+		
+		
 		ins.eventHandleInitCreep = function(event) {   
 			if (event.type == ENUM.CREEP_TYPE.CONTROLLER) {
-				var creep = CtrlControllerCreep.createNew(event.creepName, ins._path, event.name == ENUM.EVENT_NAME.CREEP_CREATED);
+				var creep = CtrlControllerCreep.createNew(event.creepName, ins._path, event.name == ENUM.EVENT_NAME.CREEP_CREATED, ins);
 				
 				if (!!creep) ins._creeps.push(creep);
 				
@@ -106,29 +118,31 @@ var CtrlController = {
 			}
 		}
 		
-		ins.tick = function() {
+		ins.tick = function() {			
+			var roomInfo = ins.getRoomInfo();
 			var controller = room.controller; 
 			if (!!!controller) return; 
 			
+			ins._needRecycle = ins.tooManyCreep();
+			
 			room.visual.poly(ins._path, {lineStyle:"dashed", stroke:"#00FF00"}); 
 			
-			var invalidCreep = [];
+			var validCreeps = [];
 			
 			ins._isFull = false;
 			_.forEach(ins._creeps, function(v){ 
 				var creep = Game.creeps[v._creepName];
 				if (!!!creep) {
-					invalidCreep.push(v);
-					return true; 
+					return ;  
 				}
-				//console.log("controller tick, creep " + creep.name);
+				
 				v.tick();
-				//Log.debug(v._isWaiting);
 				ins._isFull = ins._isFull || v._isWaiting;
+				
+				validCreeps.push(v); 
 			})
-			_.pull(ins._creeps, invalidCreep);
-			
-			Log.debug('controller stat: ' + ins._isFull);
+			ins._creeps = validCreeps;
+			// Log.debug('controller stat: ' + ins._isFull);
 		}
 		
 		return ins;

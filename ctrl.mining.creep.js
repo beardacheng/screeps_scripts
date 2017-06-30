@@ -40,10 +40,11 @@ var CtrlMiningCreep = {
 		if (!!isNew || !!!creep.memory.stat) {
 			creep.memory.stat = ins._stat;
 			creep.memory.lineSeq = ins._lineSeq;
+			Log.debug(creep.memory.lineSeq);
 		}
 					
 		creep.memory.path = Tool.serializePath(ins._path);
-				
+						
 		ins.tick = function() {			
 			creep = Game.creeps[ins._creepName]; 
 			if (!!!creep) return;   
@@ -54,7 +55,7 @@ var CtrlMiningCreep = {
 			case STAT.INIT:
 				{
 					var orgPos = ins._path[0];			
-					if (!_.isEqual(creep.pos, orgPos)) {
+					if (!_.isEqual(creep.pos, orgPos)) { 
 						var ret = creep.moveTo(orgPos);
 					} 
 					else {						
@@ -65,7 +66,7 @@ var CtrlMiningCreep = {
 				break;
 			case STAT.GO:
 				{
-					if (OK == ins.pickEnergyOnFloor(creep)) {
+					if (OK == ins.pickEnergyOnFloor(creep)) { 
 						break;
 					}
 					
@@ -103,12 +104,13 @@ var CtrlMiningCreep = {
 					
 					creep = Game.creeps[ins._creepName]; 
 					
+					
+					EventManager.ins().dispatch({name:ENUM.EVENT_NAME.MINE_LINE_FULL, 
+						roomName : ins._roomName, seq : ins._lineSeq, isFull :  (ret == ERR_NOT_ENOUGH_RESOURCES || ins.isCreepBehind(_.last(ins._path)))});
+					
 					if (_.sum(creep.carry) == creep.carryCapacity) { 
-						var full = ins.isCreepBehind(_.last(ins._path));
-						EventManager.ins().dispatch({name:ENUM.EVENT_NAME.MINE_LINE_FULL, 
-							roomName : ins._roomName, seq : ins._lineSeq, isFull : full});
+						
 							
-						Log.debug([ins._lineSeq, full]);
 						ins._stat = STAT.BACK;
 						creep.memory.stat = ins._stat;
 					}
@@ -116,6 +118,16 @@ var CtrlMiningCreep = {
 				break;
 			case STAT.BACK:
 				{
+					var room = ins.getRoom();
+					
+					ins.build(creep);
+					
+					if (_.sum(creep.carry) == 0) {
+						ins._stat = STAT.GO;
+						creep.memory.stat = ins._stat;
+						break;
+					}
+					
 					var destPos = _.last(ins._backPath);
 					if (!_.isEqual(creep.pos, destPos)) {
 						var ret = creep.moveByPath(ins._backPath);
@@ -134,6 +146,15 @@ var CtrlMiningCreep = {
 					var ret = creep.transfer(storage, RESOURCE_ENERGY);
 					if (ERR_FULL == ret) {
 					    EventManager.ins().dispatch({name: ENUM.EVENT_NAME.ENERGY_WAITFOR_ADD, roomName:creep.room.name});
+						EventManager.ins().dispatch({name:ENUM.EVENT_NAME.MINE_LINE_FULL, roomName : ins._roomName, seq : ins._lineSeq, isFull : true});
+						
+						ins.build(creep);
+						if (_.sum(creep.carry) == 0) {
+							ins._stat = STAT.GO;
+							creep.memory.stat = ins._stat;
+							break;
+						}
+						
 					}
 					
 					creep = Game.creeps[ins._creepName]; 
