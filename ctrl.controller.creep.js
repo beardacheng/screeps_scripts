@@ -6,6 +6,7 @@ var Tool = require('tool');
 var Base = require('base');
 var EventManager = require('event.manager');
 var CtrlCreep = require('ctrl.creep');
+var Log = require('log');
 
 var CtrlControllerCreep = {
 	createNew : function(creepName, path, isNew) {
@@ -26,6 +27,8 @@ var CtrlControllerCreep = {
 			_path : path,
 			_backPath : _(_.clone(path)).reverse().value(), 
 			_stat : STAT.INIT,
+			_orgPos : null,
+			_isWaiting : false,
 		});
 		
 		var creep = Game.creeps[ins._creepName]; 
@@ -86,12 +89,25 @@ var CtrlControllerCreep = {
 						if (aheadCreepStat == AHEAD_STAT.DUMPING || aheadCreepStat == AHEAD_STAT.PATH_END) {
 							ins._stat = STAT.DUMPING;
 							creep.memory.stat = ins._stat;
+							ins._isWaiting = false;
+						}
+						else if (ret == OK) {
+							if (_.isEqual(creep.pos, ins._orgPos)) {
+								ins._isWaiting = true;
+								// Log.debug('controller creep is waiting');
+							}
+							else {
+								ins._orgPos = creep.pos;
+								ins._isWaiting = false;
+							}
 						}
 
 					}
 					else {
 						ins._stat = STAT.DUMPING;
 						creep.memory.stat = ins._stat;
+						ins._isWaiting = false;
+						Log.debug(3);
 					}
 					
 					
@@ -138,6 +154,7 @@ var CtrlControllerCreep = {
 				}
 				break;
 			} 
+			
 		};
 		
 		ins.aheadCreepStat = function(pos) {

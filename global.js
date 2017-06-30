@@ -3,32 +3,37 @@ var Tool = require('tool');
 var Global = _.assign(_.clone(Tool.Singleton), {
 	CPU_COUNT : 2,
 	
-	createNew : function() {
-		var ins = {
-			_id : Game.time % Global.CPU_COUNT,
+	createNew : function(id) {
+		var ins = { 
+			_id : id != undefined ? id : Game.time % Global.CPU_COUNT,
+			_needInit : false,  //是否需要重置
 		}
-		
-		var preticked = false;
-		
+
 		RawMemory.segments[ins._id] = JSON.stringify([]);
 				
 		ins.init = function() {
+			ins.initOtherIDs();
+		}		
+		
+		ins.initOtherIDs = function() {
 			ins._otherIDs = [];
-			for (var i = 0; i < Global.CPU_COUNT; i++) { 
+			for (var i = 0; i < Global.CPU_COUNT; i++) {  
 				if (i != ins._id) ins._otherIDs.push(i); 
 			}
-		}		
+		}
 		
 		ins.sendData = function(data) {
 			_.each(ins._otherIDs, function(v) {
 				var org = JSON.parse(RawMemory.segments[v]);
 				org.push(data);
+				// console.log("put data to memory[" +  v + "]: "  + data);
 				RawMemory.segments[v] = JSON.stringify(org);
 			})
 		}
 		
 		ins.recvData = function() { 
-			var memory = JSON.parse(RawMemory.segments[ins._id]);			
+			var memory = JSON.parse(RawMemory.segments[ins._id]);	
+			// console.log("try recv data from memory, recv[" +  ins._id + "]: "  + RawMemory.segments[ins._id]);
 			if (_.size(memory) > 0) {
 				var data = _.head(memory); 
 				RawMemory.segments[ins._id] = JSON.stringify(_.drop(memory, 1));

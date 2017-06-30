@@ -5,12 +5,12 @@ var Tool = require('tool');
 var Base = require('base');
 
 var CtrlCreep = {
-	createNew : function(creepName, a) {
+	createNew : function(creepName) {
 		var ins = _.assign({}, Listener.createNew(), {
 			_creepName : creepName,
 			_setoffTime : Game.time,
-			_roundUsedSecs : 100,
-			_lastRoundUsedSecs : 100,  
+			_roundUsedSecs : ENUM.MAX_ROUND_SECS,
+			_lastRoundUsedSecs : ENUM.MAX_ROUND_SECS,  
 		});
 		
 		ins.AddListener(ENUM.EVENT_NAME.CREEP_ROUND_END, function(event) {
@@ -19,7 +19,7 @@ var CtrlCreep = {
 				return false;
 			}
 		});
-		
+ 		
 		ins.pickEnergyOnFloor = function(creep) {
 			if (!!!creep) return;
 			

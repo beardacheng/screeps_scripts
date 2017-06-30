@@ -5,12 +5,16 @@ var CTRL_MINING_ENERGY = require("ctrl.mining.energy");
 var CtrlResourceEnergy = require('ctrl.resource.energy');
 var WorldInfo = require('info.world');
 var EventManager = require('event.manager');
+var Listener = require('event.listener');
+var ENUM = require('enum');
+var Global = require('global');
+var Log = require('log');
 
 var HQ = _.assign(_.clone(Tool.Singleton), {
 	createNew : function() {
-		var ins = {
+		var ins = _.assign(Listener.createNew(), {
 			ctrls : [],
-		};
+		});
 		
 		var initCtrl = function(value, key, ctrl) {
 			var c = ctrl.createNew(key);
@@ -26,6 +30,11 @@ var HQ = _.assign(_.clone(Tool.Singleton), {
 			initCtrl(value, key, CtrlResourceEnergy);
         })
 		
+		ins.AddListener(ENUM.EVENT_NAME.SYSTEM_INIT, function() {
+			Log.info("recv system reset event");
+			Global.ins()._needInit = true;
+		})
+		
 		ins.deinit = function() {
 			ins.ctrls = [];
 			WorldInfo._ins = undefined;
@@ -36,8 +45,6 @@ var HQ = _.assign(_.clone(Tool.Singleton), {
 			_.forEach(ins.ctrls, function(value) {
 				value.tick();
 			})
-			
-			EventManager.ins().tick();
 		}
 		
 		return ins;

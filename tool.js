@@ -12,7 +12,19 @@ var Tool = {
 	    _ins : undefined,
 		ins : function() {
 			if (this._ins == undefined) { 
-				this._ins = this.createNew();
+				switch(arguments.length) {
+				case 1:
+					this._ins = this.createNew(arguments[0]);
+					break;
+				case 2:
+					this._ins = this.createNew(arguments[0], arguments[1]);
+					break;
+				case 3:
+					this._ins = this.createNew(arguments[0], arguments[1], arguments[2]);
+					break;
+				default:
+					this._ins = this.createNew.apply(this, arguments);
+				}
 			}        
 			return this._ins;
 		},

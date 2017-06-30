@@ -13,9 +13,10 @@ var Tool = require('tool');
 var EventManager = require('event.manager');
 var CtrlCreep = require('ctrl.creep');
 var Base = require('base');
+var Log = require('log');
 
 var CtrlMiningCreep = {                            
-	createNew : function(creepName, path, lineSeq, isNew, a) {
+	createNew : function(creepName, line, isNew) {
 		var STAT = {
 			INIT : 0,
 			GO : 1,
@@ -24,18 +25,23 @@ var CtrlMiningCreep = {
 			DUMPING : 4,
 		};
 		
-		var ins = _.assign({}, Base, CtrlCreep.createNew(creepName, a), {  
-			_lineSeq : lineSeq,
-			_path : path,
-			_backPath : _(_.clone(path)).reverse().value(), 
+		var ins = _.assign({}, Base, CtrlCreep.createNew(creepName), {  
+			_lineSeq : line._seq,
+			_path : line._path,
+			_backPath : _(_.clone(line._path)).reverse().value(),  
 			_stat : STAT.INIT,
+			_orgPos : null,
 		});
 		
 		var creep = Game.creeps[ins._creepName]; 
+		ins._roomName = creep.room.name;
 		if (!!!creep) return undefined;
 		
-		creep.memory.lineSeq = ins._lineSeq;
-		if (!!isNew || !!!creep.memory.stat) creep.memory.stat = ins._stat;
+		if (!!isNew || !!!creep.memory.stat) {
+			creep.memory.stat = ins._stat;
+			creep.memory.lineSeq = ins._lineSeq;
+		}
+					
 		creep.memory.path = Tool.serializePath(ins._path);
 				
 		ins.tick = function() {			
@@ -50,11 +56,10 @@ var CtrlMiningCreep = {
 					var orgPos = ins._path[0];			
 					if (!_.isEqual(creep.pos, orgPos)) {
 						var ret = creep.moveTo(orgPos);
-						return;
 					} 
 					else {						
 						ins._stat = STAT.GO;
-						creep.memory.stat = ins._stat;
+						creep.memory.stat = ins._stat; 
 					}
 				}
 				break;
@@ -70,8 +75,20 @@ var CtrlMiningCreep = {
 					}
 					
 					var destPos = _.last(ins._path);
+					var tmp = creep.pos;
 					if (!_.isEqual(creep.pos, destPos)) {
-						creep.moveByPath(ins._path);
+						var ret = creep.moveByPath(ins._path);
+						
+						if (ret == ERR_NOT_FOUND) 
+						{
+							ins._stat = STAT.INIT;
+							creep.memory.stat = ins._stat; 
+						}
+						else if (OK == ret) {
+							if (!_.isEqual(ins._orgPos, creep.pos)) {
+								ins._orgPos = creep.pos;
+							}
+						}
 					}
 					else {
 						ins._stat = STAT.MINING;
@@ -82,8 +99,16 @@ var CtrlMiningCreep = {
 			case STAT.MINING:
 				{
 					var energySource = creep.pos.findClosestByRange(FIND_SOURCES_ACTIVE);
-					creep.harvest(energySource);
-					if (_.sum(creep.carry) == creep.carryCapacity) {
+					var ret = creep.harvest(energySource);
+					
+					creep = Game.creeps[ins._creepName]; 
+					
+					if (_.sum(creep.carry) == creep.carryCapacity) { 
+						var full = ins.isCreepBehind(_.last(ins._path));
+						EventManager.ins().dispatch({name:ENUM.EVENT_NAME.MINE_LINE_FULL, 
+							roomName : ins._roomName, seq : ins._lineSeq, isFull : full});
+							
+						Log.debug([ins._lineSeq, full]);
 						ins._stat = STAT.BACK;
 						creep.memory.stat = ins._stat;
 					}
@@ -95,7 +120,7 @@ var CtrlMiningCreep = {
 					if (!_.isEqual(creep.pos, destPos)) {
 						var ret = creep.moveByPath(ins._backPath);
 						
-						//creep.say(ret);
+						// creep.say(ret);
 					}
 					else {
 						ins._stat = STAT.DUMPING;
@@ -111,6 +136,7 @@ var CtrlMiningCreep = {
 					    EventManager.ins().dispatch({name: ENUM.EVENT_NAME.ENERGY_WAITFOR_ADD, roomName:creep.room.name});
 					}
 					
+					creep = Game.creeps[ins._creepName]; 
 					if (_.sum(creep.carry) == 0){ 
 						ins.setRoundBegin();
 						
@@ -120,6 +146,20 @@ var CtrlMiningCreep = {
 				}
 				break;
 			}
+		}
+		
+		ins.isCreepBehind = function(pos) {
+			if (_.isEqual(pos, _.first(ins._path))) return false;
+			
+			var index = _.findLastIndex(ins._path, function(v) {
+				return  _.isEqual(pos, v);
+				});
+			
+			if (-1 == index) return false;
+			
+			var room = ins.getRoom();
+			var creepBehind = _.find(room.lookAt(ins._path[index - 1]), _.property('creep'));
+			return !!creepBehind;
 		}
 		
 		return ins;

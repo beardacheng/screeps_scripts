@@ -10,6 +10,7 @@
 var Tool = require('tool');
 var Global = require('global');
 var ENUM = require('enum');
+var Log = require('log');
 
 var EventManager = _.assign({
 	createNew : function() {
@@ -33,10 +34,9 @@ var EventManager = _.assign({
 		
 		ins.dispatch = function(event) {
 		    // console.log("dispatch " + event.name + ", listener count "  + _.size(this._listeners))
-			ins.handleEvent(event);
+			ins.handleEvent(event); 
 			
 			if (_.indexOf(ENUM.EVENT_NAME.BroadcastEvents(), event.name) != -1) {
-				// console.log('send global event ' + event.name);
 				Global.ins().sendData(event);
 			}
 		}
@@ -54,6 +54,8 @@ var EventManager = _.assign({
 			while(event != null) {				
 				// console.log('recv global event ' + event.name);
 				ins.handleEvent(event);
+				if (event.name == ENUM.EVENT_NAME.SYSTEM_INIT) break;
+				
 				event = Global.ins().recvData();
 			}
 		}

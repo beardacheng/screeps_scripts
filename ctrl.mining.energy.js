@@ -13,6 +13,8 @@ var EventManager = require('event.manager');
 var Tool = require('tool');
 var CtrlMiningLine = require('ctrl.mining.line');
 var Base = require('base');
+var Log = require('log');
+var Global = require('global');
 
 var CtrlMiningEnergy = {
     createNew : function(roomName) {
@@ -20,29 +22,29 @@ var CtrlMiningEnergy = {
 			_roomName : roomName,
 			_paths : [],
 			_lines : [],
-			//_pathFindMatrix : new PathFinder.CostMatrix,
 		});
 		
-		var room = ins.getRoom();
-		var spawn = ins.getSpawn();
-		var roomInfo = ins.getRoomInfo();
-		
 		ins.init = function() {
+			var room = ins.getRoom();
+			var spawn = ins.getSpawn();
+			var roomInfo = ins.getRoomInfo();
+			
 			ins.initEvent();
 		   	
-			//init paths
-			if (room.memory.mining_energy_paths == undefined || !!!room.memory.spawnId ||room.memory.spawnId != spawn.id) {
-			//if (true) {
-			    _.forEach(room.find(FIND_SOURCES, {resourceType:RESOURCE_ENERGY}), function(value){
-			        createPath(spawn.pos, value.pos);
+			//init paths 
+			if (ins.needInitPath()) {
+			    Log.info('----INIT PATH----');
+				_.forEach(room.find(FIND_SOURCES, {resourceType:RESOURCE_ENERGY}), function(value){
+			        createPath(spawn.pos, value.pos); 
 			    })
 				
-				var paths = [];   
+				var paths = [];     
 				_.forEach(ins._paths, function(v){
 					paths.push(Tool.serializePath(v)); 
 				})
 				room.memory.mining_energy_paths = paths;
 				room.memory.spawnId = spawn.id;
+				
 			}
 			else {
 				_.forEach(room.memory.mining_energy_paths, function(v){ 
@@ -57,7 +59,18 @@ var CtrlMiningEnergy = {
 			return true;
 		}
 		
+		ins.needInitPath = function() {
+			var room = ins.getRoom();
+			var spawn = ins.getSpawn();
+			var roomInfo = ins.getRoomInfo();
+						
+			return room.memory.mining_energy_paths == undefined || !!!room.memory.spawnId ||room.memory.spawnId != spawn.id;
+		}
+		
 	    var createPath = function(from, to) { 
+			var room = ins.getRoom();
+			var spawn = ins.getSpawn();
+			var roomInfo = ins.getRoomInfo();
 			var mineAt = to;
 
 			var posesAround = Tool.findInRange(room, to, 1, 'terrain', ['swamp', 'plain']);
@@ -89,65 +102,78 @@ var CtrlMiningEnergy = {
 		ins.initEvent = function(){
 			ins.AddListener(ENUM.EVENT_NAME.CREEP_CREATED, ins.eventHandleCreepCreated);
 			ins.AddListener(ENUM.EVENT_NAME.CREEP_LOADED, ins.eventHandleCreepLoaded);
+			ins.AddListener(ENUM.EVENT_NAME.CHECK_NEED_CREAT_CREEP, ins.eventHandleCreateCreepCheck);
+		}
+		
+		ins.eventHandleCreateCreepCheck = function(event) {
+			if (ins.highestLineFree() == -1) return;
+			event.types.push(ENUM.CREEP_TYPE.MINER);
 		}
 		
 		ins.tick = function() {	
 			//画出线路
-			ins.showLine();
+			ins.showLine(); 
 			
 			//驱动线路
-			_.forEach(ins._lines, function(v){ 
+			_.forEach(ins._lines, function(v){  
 				v.tick();
 				// console.log('line ' + v._seq + ' pri is ' + v._priority);
-			})
+			})			
 			
-			//生成creep : TODO
-			var creepCount = roomInfo.creepCount(ENUM.CREEP_TYPE.MINER);
-			if (creepCount <= 3) {
-			//if (false) {
-				var event = {name: ENUM.EVENT_NAME.NEED_CREATE_CREEP, 
-							body:[WORK,MOVE,CARRY], 
-							type: ENUM.CREEP_TYPE.MINER,
-							priority: ENUM.PRIORITY.LV_1}
-				EventManager.ins().dispatch(event)
-			}
-			
+			//
+			Log.debug(_.map(ins._lines, '_priority'));
+			Log.debug(ins.highestLineFree());
 		}
 
 		ins.showLine = function() {
+			var room = ins.getRoom();
+			var spawn = ins.getSpawn();
+			var roomInfo = ins.getRoomInfo();
+			
 		    _.forEach(ins._paths, function(value){
 		        room.visual.poly(value, {lineStyle:"dashed"});  
 		    })
 		}
 		
-		ins.highestLine = function() {
-			var pri = 100;
+		ins.highestLineFree = function() {
+			var pri = ENUM.MAX_ROUND_SECS; 
 			var seq = -1;
 			
-			_.each(ins._lines, function(v,i){
+			_.each(ins._lines, function(v,i){  
+				if (!v.isCanAddCreep()) return true;
+				
 				if (v._priority < pri) {
 					pri = v._priority;
 					seq = i;
 				}
-			})
+			});
 			
-			return seq == -1 ? 0 : seq;
+			return seq;
 		}
-		
 		
 		ins.eventHandleCreepCreated = function(event) {
 			if (event.type == ENUM.CREEP_TYPE.MINER) { 
-				ins._lines[ins.highestLine()].addCreep(event.creepName, true);
+				var creep = Game.creeps[event.creepName];
+				
+				var lineSeq = !!creep.memory.lineSeq ? creep.memory.lineSeq : ins.highestLineFree();
+				ins._lines[lineSeq].addCreep(event.creepName, true);  
 			}
 		}
 		
-		ins.eventHandleCreepLoaded = function(event) {
+		ins.eventHandleCreepLoaded = function(event) { 
 			if (event.roomName == ins._roomName && event.type == ENUM.CREEP_TYPE.MINER) {
 				var creep = Game.creeps[event.creepName];
+				if (creep.memory.lineSeq === undefined) {
+					Log.warn('seq invalid, creep name is ' + creep.name);
+					return;
+				}
+				
 				ins._lines[creep.memory.lineSeq].addCreep(event.creepName); 
-				console.log("MINING load creep(" + creep.name + ")");
+				Log.debug("MINING load creep(" + creep.name + ")");
 			}
 		}
+		
+
 		
 		return ins;
 	}

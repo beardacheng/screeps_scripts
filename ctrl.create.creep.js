@@ -3,6 +3,7 @@ var ENUM = require('enum');
 var EventManager = require('event.manager');
 var Tool = require('tool');
 var Base = require('base');
+var Log = require('log');
 
 var CtrlCreateCreep = {
 	createNew : function(roomName) {
@@ -20,28 +21,65 @@ var CtrlCreateCreep = {
 		}
 		
 		ins.initEvent = function(){
-			ins.AddListener(ENUM.EVENT_NAME.NEED_CREATE_CREEP, ins.handleEventCreateCreep); 
+			ins.AddListener(ENUM.EVENT_NAME.ENERGY_FULL, ins.handleEventEnergyFull); 
 		}
 		
-		ins.handleEventCreateCreep = function(event) { 
+		ins.createCreep = function(body, type) {
 		    spawn = ins.getSpawn();
-			//console.log("recv event " + ENUM.EVENT_NAME.NEED_CREATE_CREEP + " type = " + event.type);
-			var ret = spawn.canCreateCreep(event.body);
+			// Log.debug('create creep ' + body + "; " + type);
+			var ret = spawn.canCreateCreep(body);
 			if (OK != ret) {
 			    //console.log("can't create, ret " + ret + " body is " + event.body + " total energy is " + spawn.energy + " name is " + spawn.name);
 			    return; 
 			}
 			
 			var orgEnergyCount = spawn.energy;
-			var name = spawn.createCreep(event.body); 
+			var name = spawn.createCreep(body); 
 			if (typeof(name) == 'string') { 
-				console.log("creep created, name is " + name + ", type is " + event.type);
+				Log.info("creep created, name is " + name + ", type is " + type);
 				
 				var creep = Game.creeps[name];
-				creep.memory.type = event.type; 
-				EventManager.ins().dispatch({name: ENUM.EVENT_NAME.CREEP_CREATED, type: event.type, creepName:name});
-				EventManager.ins().dispatch({name: ENUM.EVENT_NAME.ENERGY_SUB, type:ENUM.ENERGY_SUB_FOR.CREATE_CREEP, count : orgEnergyCount - spawn.energy});
+				creep.memory = {};
+				creep.memory.type = type; 
+				EventManager.ins().dispatch({name: ENUM.EVENT_NAME.CREEP_CREATED, type: type, creepName:name});
 			}
+		}
+		
+		ins.handleEventEnergyFull = function(event) {
+			if (ins._roomName != event.roomName) return;
+
+			//query
+			var queryEvent = {name: ENUM.EVENT_NAME.CHECK_NEED_CREAT_CREEP, roomName: ins._roomName, types:[]};
+			EventManager.ins().dispatch(queryEvent);
+			
+			var roomInfo = ins.getRoomInfo();
+			
+			if (roomInfo.creepCount(ENUM.CREEP_TYPE.MINER) < 3) {
+				if (_.indexOf(queryEvent.types, ENUM.CREEP_TYPE.MINER) != -1) {
+					ins.createCreep([WORK,MOVE,CARRY], ENUM.CREEP_TYPE.MINER);
+					return;
+				}
+			} 
+			else if (roomInfo.creepCount(ENUM.CREEP_TYPE.CONTROLLER) == 0) {
+				if (_.indexOf(queryEvent.types, ENUM.CREEP_TYPE.CONTROLLER) != -1) {
+					ins.createCreep([WORK,MOVE,CARRY], ENUM.CREEP_TYPE.CONTROLLER);
+					return;
+				}
+			} 
+			
+			if (_.indexOf(queryEvent.types, ENUM.CREEP_TYPE.MINER) != -1)
+			{
+				ins.createCreep([WORK,MOVE,CARRY], ENUM.CREEP_TYPE.MINER);
+			}
+			else if (_.indexOf(queryEvent.types, ENUM.CREEP_TYPE.CONTROLLER) != -1)
+			{
+				ins.createCreep([WORK,MOVE,CARRY], ENUM.CREEP_TYPE.CONTROLLER);
+			}
+			else {
+				EventManager.ins().dispatch({name:ENUM.EVENT_NAME.ENERGY_OVER_FULL, roomName: ins._roomName});
+				Log.info('OVERFLOW');
+			}
+			
 		}
 		
 		ins.tick = function() {

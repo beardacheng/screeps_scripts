@@ -32,6 +32,8 @@ var roomInfo = {
 			ins.creepInfo.init();
 			
 			_.forEach(Game.creeps, function(value) {
+				if (value.spawning) return true; 
+				
 				var type = value.memory.type;
 				ins.creepInfo.typeCount[type] = ins.creepInfo.typeCount[type] == undefined ?  1 : ins.creepInfo.typeCount[type] + 1
 			})

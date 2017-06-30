@@ -11,20 +11,22 @@ var ENUM = require('enum');
 var EventManager = require('event.manager');
 var Tool = require('tool');
 var Base = require('base');
+var Log = require('log');
 
 var CtrlResourceEnergy = {
     createNew : function(roomName) {
 		var ins = _.assign({}, Listener.createNew(), Base, { 
 			_roomName : roomName,
 		});
-		
-		var room = ins.getRoom();
 
+		var room = ins.getRoom();
 		room.memory.energy_last_show = 0;
 		room.memory.energy_add_waited = 0;
 		room.memory.energy_sub_waited = 0;
 	
 	    ins.init = function() {
+			var room = ins.getRoom();
+			
 	        ins.AddListener(ENUM.EVENT_NAME.ENERGY_WAITFOR_ADD, function(event) {
 	            if (event.roomName == ins._roomName) room.memory.energy_add_waited++;
 	        });
@@ -38,17 +40,23 @@ var CtrlResourceEnergy = {
 	    }
 	    
 	    ins.tick = function() {
+			var room = ins.getRoom();
+			var spawn = ins.getSpawn();
+			
+			// 统计数据
 	        if (Game.time % 60 == 0 && room.memory.energy_last_show != Game.time) {
-	            //console.log("----- ENERGY INFO: ADDED " + room.memory.energy_added + "; SUBED " + room.memory.energy_useed + " -----");
-	            //room.memory.energy_added = 0;
-	            //room.memory.energy_useed = 0;
-	            
-	            console.log("----- ENERGY INFO: ADD WAIT " + room.memory.energy_add_waited + "; SUB WAIT " + room.memory.energy_sub_waited + " -----");
-	            
+	            Log.info("----- ENERGY INFO: ADD WAIT " + room.memory.energy_add_waited + "; SUB WAIT " + room.memory.energy_sub_waited + " -----");
 	            room.memory.energy_add_waited = 0;
 	            room.memory.energy_sub_waited = 0;
 	            room.memory.energy_last_show = Game.time;
 	        }
+			
+			//spawn是否已满 
+			// console.log([spawn.energy, spawn.energyCapacity]);
+			if (spawn.energy == spawn.energyCapacity) {
+				EventManager.ins().dispatch({name:ENUM.EVENT_NAME.ENERGY_FULL, roomName: ins._roomName});
+			}
+			
 	    }
 		
 		return ins;
