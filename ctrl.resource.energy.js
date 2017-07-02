@@ -53,7 +53,8 @@ var CtrlResourceEnergy = {
 			
 			//spawn是否已满 
 			// console.log([spawn.energy, spawn.energyCapacity]);
-			if (spawn.energy == spawn.energyCapacity) {
+			if (spawn.energyAvailable == spawn.energyCapacityAvailable) {
+			//if (room.energyAvailable == room.energyCapacityAvailable) {
 				EventManager.ins().dispatch({name:ENUM.EVENT_NAME.ENERGY_FULL, roomName: ins._roomName});
 			}
 			

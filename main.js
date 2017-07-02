@@ -10,7 +10,7 @@ Tool.init();
 Global.ins().init();
 
 var spawnIDs = [];
-module.exports.loop = function() { 
+module.exports.loop = function() {  
 	EventManager.ins().tick(); 
 	
 	if (Global.ins()._id == 0) {

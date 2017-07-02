@@ -6,7 +6,7 @@ var CtrlControllerCreep = require('ctrl.controller.creep');
 var Base = require('base');
 var Log = require('log');
 
-var MAX_COUNT = 10; 
+var MAX_COUNT = 20; 
 
 var CtrlController = {
 	createNew : function(roomName) {

@@ -45,10 +45,33 @@ var CtrlCreateCreep = {
 			}
 		}
 		
+		ins.calcBody = function(org, extend) {
+		    var room = ins.getRoom();
+		    //var energyCapacity = room.energyCapacityAvailable;
+		    var energyCapacity = room.energy;
+		    
+		    var cost = function(bodies) {
+		        return _.sum(bodies, function(v) {return BODYPART_COST[v]});
+		    }
+		    
+		    var targetBody = org;
+		    while(cost(targetBody.concat(extend)) < energyCapacity) {
+		        targetBody = targetBody.concat(extend);
+		    }
+
+            return targetBody;		    
+		} 
+		
 		ins.handleEventEnergyFull = function(event) {
 			if (ins._roomName != event.roomName) return;
-			var MINER_BODY = [WORK,WORK,MOVE,CARRY];
-			var CONTROLLER_BODY = [WORK,MOVE,CARRY,CARRY,CARRY];
+			
+			var MINER_BODY_ORG = [WORK,MOVE,CARRY];
+			var MINER_BODY_EXTEND = [WORK, WORK, CARRY];
+			var MINER_BODY = ins.calcBody(MINER_BODY_ORG, MINER_BODY_EXTEND);
+			
+			var CONTROLLER_ORG = [WORK,MOVE,CARRY];
+			var CONTROLLER_BODY_EXTEND = [CARRY,CARRY,WORK];
+			var CONTROLLER_BODY = ins.calcBody(CONTROLLER_ORG, CONTROLLER_BODY_EXTEND);
 
 			//query
 			var queryEvent = {name: ENUM.EVENT_NAME.CHECK_NEED_CREAT_CREEP, roomName: ins._roomName, types:[]};
@@ -56,7 +79,7 @@ var CtrlCreateCreep = {
 			
 			var roomInfo = ins.getRoomInfo();
 			
-			if (roomInfo.creepCount(ENUM.CREEP_TYPE.MINER) < 3) {
+			if (roomInfo.creepCount(ENUM.CREEP_TYPE.MINER) < 10) {
 				if (_.indexOf(queryEvent.types, ENUM.CREEP_TYPE.MINER) != -1) {
 					ins.createCreep(MINER_BODY, ENUM.CREEP_TYPE.MINER);
 					return;

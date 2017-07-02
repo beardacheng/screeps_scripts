@@ -9,6 +9,7 @@ var Global = _.assign(_.clone(Tool.Singleton), {
 			_needInit : false,  //是否需要重置
 		}
 
+        RawMemory.setActiveSegments([0,1,2]);
 		RawMemory.segments[ins._id] = JSON.stringify([]);
 				
 		ins.init = function() {
@@ -28,6 +29,8 @@ var Global = _.assign(_.clone(Tool.Singleton), {
 				org.push(data);
 				// console.log("put data to memory[" +  v + "]: "  + data);
 				RawMemory.segments[v] = JSON.stringify(org);
+				
+				RawMemory.setActiveSegments([0,1,2]);
 			})
 		}
 		
@@ -37,6 +40,7 @@ var Global = _.assign(_.clone(Tool.Singleton), {
 			if (_.size(memory) > 0) {
 				var data = _.head(memory); 
 				RawMemory.segments[ins._id] = JSON.stringify(_.drop(memory, 1));
+				RawMemory.setActiveSegments([0,1,2]);
 				return data;
 			}
 			

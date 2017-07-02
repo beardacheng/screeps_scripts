@@ -31,6 +31,7 @@ var CtrlMiningCreep = {
 			_backPath : _(_.clone(line._path)).reverse().value(),  
 			_stat : STAT.INIT,
 			_orgPos : null,
+			_initStatSecs : 0,
 		});
 		
 		var creep = Game.creeps[ins._creepName]; 
@@ -54,6 +55,8 @@ var CtrlMiningCreep = {
 			switch(ins._stat) { 
 			case STAT.INIT:
 				{
+				    ins._initStatSecs++;
+				    
 					var orgPos = ins._path[0];			
 					if (!_.isEqual(creep.pos, orgPos)) { 
 						var ret = creep.moveTo(orgPos);
@@ -61,6 +64,12 @@ var CtrlMiningCreep = {
 					else {						
 						ins._stat = STAT.GO;
 						creep.memory.stat = ins._stat; 
+					}
+					
+					if (ins._initStatSecs >= 200) {
+					    creep.say('i am over init');
+					    var spawn = ins.getSpawn();
+					    spawn.recycleCreep(creep);
 					}
 				}
 				break;
@@ -121,6 +130,7 @@ var CtrlMiningCreep = {
 					var room = ins.getRoom();
 					
 					ins.build(creep);
+					ins.dumpEnergy();
 					
 					if (_.sum(creep.carry) == 0) {
 						ins._stat = STAT.GO;

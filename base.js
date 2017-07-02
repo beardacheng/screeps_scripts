@@ -6,7 +6,7 @@
  * var mod = require('base');
  * mod.thing == 'a thing'; // true
  */
-var WorldInfo = require('info.world');
+var WorldInfo = require('info.world'); 
 
 var Base = {
 	getSpawn : function(){

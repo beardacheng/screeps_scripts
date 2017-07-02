@@ -6,6 +6,7 @@
  * var mod = require('tool');
  * mod.thing == 'a thing'; // true
  */
+ 
 
 var Tool = {
 	Singleton : {		
@@ -38,12 +39,19 @@ var Tool = {
 	},
 	
 	findInRange : function(room, pos, range, type, types) {
-		return _.filter(room.lookAtArea(pos.y - range, pos.x - range , pos.y + range, pos.x + range, true), function(value) {			
+	    var area = Tool.createArea(pos, range);
+	    var targets = (range <= 0) ? (room.lookAt(pos.x, pos.y)) : (room.lookAtArea(area.top, area.left, area.bottom, area.right, true));
+
+		return _.filter(targets, function(value) {			
 			switch(value.type){
 			case 'terrain':
 				return value.type == type && types.indexOf(value.terrain) != -1;
 			case 'source':
 				return value.type == type;
+			case 'creep':
+			    return value.type == type;
+			case 'structure':
+			    return value.type == type && types.indexOf(value.structure.structureType) != -1;
 			default:
 				return false;
 			} 

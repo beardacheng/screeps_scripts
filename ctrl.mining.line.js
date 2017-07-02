@@ -63,6 +63,8 @@ var CtrlMiningLine = {
 			//更新优先级
 			ins.updatePriority();
 			
+			//test 
+            //Log.debug([ins._seq, ins.isFull()]);
 		};
 		
 		ins.updatePriority = function() {
@@ -82,13 +84,19 @@ var CtrlMiningLine = {
 		}
 		
 		ins.isCanAddCreep = function() {
-			return _.size(ins._creeps) == 0 || (_.size(ins._creeps) < _.size(ins._path) && !ins._full);
+			return _.size(ins._creeps) == 0 || (_.size(ins._creeps) < _.size(ins._path) && !ins.isFull());
 		}
 		 
 		ins.addCreep = function(creepName, isNew) { 			 
 			//console.log('new creep is ' + newCreep + ' seq is ' + ins._seq);
 			ins._creeps.push(CtrlMiningCreep.createNew(creepName, ins, isNew)); 
 			ins.updatePriority();
+		};
+		
+		ins.isFull = function() {
+		    var room = ins.getRoom();
+		    return _.size(Tool.findInRange(room, _.first(ins._path), 0, 'creep')) == 1 
+		            || _.size(Tool.findInRange(room, _.last(ins._path), 0, 'creep')) == 1 ; 
 		};
 		
 		return ins;

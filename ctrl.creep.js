@@ -3,6 +3,7 @@ var ENUM = require('enum');
 var EventManager = require('event.manager');
 var Tool = require('tool');
 var Base = require('base');
+var Log = require('log');
 
 var CtrlCreep = {
 	createNew : function(creepName) {
@@ -50,12 +51,40 @@ var CtrlCreep = {
 			}
 			
 			var area = Tool.createArea(creep.pos, 1);
-			var sites = room.lookForAtArea(LOOK_CONSTRUCTION_SITES, area.top, area.left, area.bottom, area.right, true);
-			if (_.size(sites) > 0) {
-				var site = _.find(sites, function(v) { if (v.x != creep.pos.x || v.y != creep.pos.y) return true;});
-				if (!!site) creep.build(site.constructionSite);
+			var site = _(room.lookForAtArea(LOOK_CONSTRUCTION_SITES, area.top, area.left, area.bottom, area.right, true)).filter(function(v) { 
+			    return (v.x != creep.pos.x || v.y != creep.pos.y);
+			}).sortBy(
+			    function(v) {
+			        return v.progress / v.progressTotal; 
+			    }).last();
+			    
+			if (site != undefined) {
+				creep.build(site.constructionSite);
 			}
+			
 		}
+		
+		ins.findNearByStructure = function(types) {
+		    var range = 1;
+		    var creep = Game.creeps[ins._creepName];
+		    
+		    return _.map(Tool.findInRange(creep.room, creep.pos, 1, 'structure', types), 'structure');
+		};
+		
+		ins.carryEnergy = function() {
+		    return Game.creeps[ins._creepName].carry[RESOURCE_ENERGY];
+		}
+		
+		ins.dumpEnergy = function() {
+		    var creep = Game.creeps[ins._creepName];
+		    var storages = ins.findNearByStructure([STRUCTURE_SPAWN, STRUCTURE_EXTENSION, STRUCTURE_STORAGE]);
+		    if (_.size(storages) == 0 || ins.carryEnergy() == 0) return;
+		    
+		    var count = ins.carryEnergy();
+		    _.each(storages, function(v) {
+		        creep.transfer(v, RESOURCE_ENERGY);
+		    })
+		};
 		
 		return ins;
 	},
