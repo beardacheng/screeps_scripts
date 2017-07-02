@@ -48,7 +48,7 @@ var CtrlCreateCreep = {
 		ins.calcBody = function(org, extend) {
 		    var room = ins.getRoom();
 		    //var energyCapacity = room.energyCapacityAvailable;
-		    var energyCapacity = room.energy;
+		    var energyCapacity = room.energyAvailable;
 		    
 		    var cost = function(bodies) {
 		        return _.sum(bodies, function(v) {return BODYPART_COST[v]});
