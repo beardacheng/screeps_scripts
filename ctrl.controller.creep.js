@@ -31,6 +31,10 @@ var CtrlControllerCreep = {
 			_isWaiting : false,
 		});
 		
+		ins.isInit = function() {
+		    return ins._stat == STAT.INIT;
+		}
+		
 		var creep = Game.creeps[ins._creepName]; 
 		if (!!!creep) return undefined; 
 		ins._roomName = creep.room.name;

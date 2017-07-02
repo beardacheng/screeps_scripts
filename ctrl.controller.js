@@ -97,8 +97,12 @@ var CtrlController = {
 			var spawn = ins.getSpawn();
 			var roomInfo = ins.getRoomInfo();
 			
-			if (ins._isFull || spawn.energy < 50 || roomInfo.creepCount(ENUM.CREEP_TYPE.CONTROLLER)  >= MAX_COUNT) return;
+			if (ins._isFull || spawn.energy < 50 || roomInfo.creepCount(ENUM.CREEP_TYPE.CONTROLLER)  >= MAX_COUNT || ins.hasCreepInInitStat()) return;
 			event.types.push(ENUM.CREEP_TYPE.CONTROLLER);
+		}
+		
+		ins.hasCreepInInitStat = function() {
+		    return _.any(ins._creeps, function(v) {return v.isInit()});
 		}
 		
 		ins.tooManyCreep = function() {
